@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "sqs_access" {
 }
 
 resource "aws_iam_policy" "sqs_access" {
-  name = "MySqsAccessPolicy"
+  name   = "MySqsAccessPolicy"
   policy = data.aws_iam_policy_document.sqs_access.json
 }
 
@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "lambda_logs" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    effect = "Allow"
+    effect    = "Allow"
     resources = ["arn:aws:logs:*:*:*"]
   }
 }
@@ -67,7 +67,7 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 resource "aws_iam_role" "fraud_detector" {
-  name = "${var.project_name}-fraud-detector-role"
+  name               = "${var.project_name}-fraud-detector-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 

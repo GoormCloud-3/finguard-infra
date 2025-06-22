@@ -16,10 +16,10 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_subnet" "public" {
-  count                   = length(local.public_subnet_cidrs)
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = local.public_subnet_cidrs[count.index]
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  count             = length(local.public_subnet_cidrs)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = local.public_subnet_cidrs[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
     Name = "${var.project_name}-public-${count.index + 1}"
