@@ -1,8 +1,8 @@
 # RDS Proxy 접근을 하는 람다가 사용할 보안 그룹
 resource "aws_security_group" "dao" {
-  name = "${var.project_name}-dao"
+  name        = "${var.project_name}-dao"
   description = "Security group which can do access to ${var.project_name}-mysql database"
-  vpc_id = aws_vpc.main.id
+  vpc_id      = aws_vpc.main.id
 
   egress {
     from_port   = 0
@@ -22,10 +22,10 @@ resource "aws_security_group" "rds_proxy" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port                = 3306
-    to_port                  = 3306
-    protocol                 = "tcp"
-    security_groups          = [aws_security_group.dao.id] # Lambda 보안그룹의 접근을 허용
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.dao.id] # Lambda 보안그룹의 접근을 허용
   }
 
   egress {
@@ -47,9 +47,9 @@ resource "aws_security_group" "mysql" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
     security_groups = [aws_security_group.rds_proxy.id]
   }
 
