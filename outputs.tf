@@ -1,5 +1,6 @@
 output "rds_endpoint" {
   description = "JDBC endpoint for the MySQL instance"
+  sensitive = true
   value       = aws_db_instance.mysql.endpoint
 }
 
@@ -11,6 +12,7 @@ output "rds_endpoint_ssm" {
 
 output "rds_proxy_hostname" {
   description = "RDS 프록시의 hostname"
+  sensitive = true
   value = aws_db_proxy.mysql_proxy.endpoint
 }
 

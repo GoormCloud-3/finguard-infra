@@ -1,3 +1,4 @@
+# RDS Proxy 접근을 하는 람다가 사용할 보안 그룹
 resource "aws_security_group" "dao" {
   name = "${var.project_name}-dao"
   description = "Security group which can do access to ${var.project_name}-mysql database"
@@ -24,7 +25,7 @@ resource "aws_security_group" "rds_proxy" {
     from_port                = 3306
     to_port                  = 3306
     protocol                 = "tcp"
-    security_groups          = [aws_security_group.dao.id] # Lambda에서 들어오게
+    security_groups          = [aws_security_group.dao.id] # Lambda 보안그룹의 접근을 허용
   }
 
   egress {
@@ -39,6 +40,7 @@ resource "aws_security_group" "rds_proxy" {
   }
 }
 
+# RDS의 보안그룹으로 Proxy를 통한 접근만 허용
 resource "aws_security_group" "mysql" {
   name        = "${var.project_name}-rds"
   description = "Allow MySQL inbound traffic (adjust CIDR for production)"
