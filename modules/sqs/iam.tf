@@ -81,7 +81,7 @@ resource "aws_iam_role_policy_attachment" "attach_ssm_access" {
   policy_arn = aws_iam_policy.ssm_access.arn
 }
 
-resource "aws_iam_role_policy_attachment" "attach_ssm_access" {
+resource "aws_iam_role_policy_attachment" "attach_log_access" {
   role       = aws_iam_role.fraud_detector.name
   policy_arn = aws_iam_policy.lambda_logs.arn
 }
