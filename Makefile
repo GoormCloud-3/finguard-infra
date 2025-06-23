@@ -32,3 +32,5 @@ apply:
 # Destroy Terraform-managed infrastructure
 destroy:
 	terraform destroy
+action_test:
+	act push --secret-file .secrets
