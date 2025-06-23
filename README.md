@@ -1,8 +1,12 @@
 # FinGuard-Infra
 
-## (필독) CI/CD 파이프라인
+## CI/CD 파이프라인
+본 프로젝트는 **커밋 전에 코드 린팅을 자동으로 수행**하도록 `pre-commit` 훅을 사용합니다.  
+개발자는 로컬에 pre-commit 환경을 반드시 구성해야 하며, 미구성 시 커밋이 차단될 수 있습니다.
 
-로컬에서 사용자가 commit을 하기 전에 코드 린팅을 확인하도록 강제하는 pre-commit 패키지 설치가 필요합니다.
+## 개발 환경
+ - Terraform 1.11.4
+ - Python 3.12.3
 
 ## (필독) 개발 환경 세팅
 
@@ -50,4 +54,9 @@ $ make lint
 
 ```bash
 $ make validate
+```
+3. Github Action 로컬 테스트
+
+``` bash
+$ make action_test
 ```
