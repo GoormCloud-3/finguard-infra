@@ -11,3 +11,8 @@ variable "env" {
     error_message = "개발 환경은 'dev', 'prod', 'stage' 중 하나를 선택해주세요."
   }
 }
+
+variable "push_lambda_role_arn" {
+  description = "SQS를 사용할 Lambda의 Role의 ARN"
+  type        = string
+}

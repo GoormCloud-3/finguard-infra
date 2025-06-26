@@ -4,6 +4,12 @@ variable "project_name" {
   default     = "finguard"
 }
 
+variable "region" {
+  description = "AWS Region"
+  type        = string
+  default     = "ap-northeast-2"
+}
+
 variable "env" {
   description = "현재 인프라의 개발 환경"
   type        = string

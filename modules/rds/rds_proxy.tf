@@ -2,9 +2,9 @@
 resource "aws_db_proxy" "mysql_proxy" {
   name                   = "${var.project_name}-proxy"
   engine_family          = "MYSQL"
-  role_arn               = aws_iam_role.rds_proxy_secret_access.arn
+  role_arn               = var.rds_proxy_role_arn
   vpc_subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
-  vpc_security_group_ids = [aws_security_group.rds_proxy.id]
+  vpc_security_group_ids = [var.rds_proxy_sg_id]
 
   auth {
     auth_scheme               = "SECRETS"
@@ -16,22 +16,6 @@ resource "aws_db_proxy" "mysql_proxy" {
   require_tls         = true
   idle_client_timeout = 1801 # 30분
   debug_logging       = true
-}
-
-resource "aws_secretsmanager_secret" "rds_secret" {
-  name = "${var.project_name}-db-secret"
-}
-
-resource "aws_secretsmanager_secret_version" "rds_secret_version" {
-  secret_id = aws_secretsmanager_secret.rds_secret.id
-  secret_string = jsonencode({
-    dbInstanceIdentifier = aws_db_instance.mysql.id,
-    engine               = "mysql",
-    host                 = aws_db_instance.mysql.address,
-    port                 = 3306,
-    username             = var.db_username
-    password             = var.db_password
-  })
 }
 
 resource "aws_db_proxy_target" "mysql_proxy_target" {

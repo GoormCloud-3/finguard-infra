@@ -12,15 +12,15 @@ data "aws_iam_policy_document" "rds_proxy_assume_role" {
   }
 }
 
-data "aws_kms_key" "secretsmanager" {
-  key_id = "alias/aws/secretsmanager"
-}
-
-data "aws_kms_key" "ssm" {
-  key_id = "alias/aws/ssm"
-}
-
 data "aws_iam_policy_document" "rds_proxy_secret_access" {
+  statement {
+    effect  = "Allow"
+    actions = ["rds-db:connect"]
+    resources = [
+      "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${module.rds.rds_resource_id}/${var.db_username}"
+    ]
+  }
+
   statement {
     sid    = "SecretsManagerAccess"
     effect = "Allow"
@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "rds_proxy_secret_access" {
       "secretsmanager:DescribeSecret"
     ]
     resources = [
-      aws_secretsmanager_secret.rds_secret.arn
+      module.rds.rds_proxy_secret
     ]
   }
 
@@ -77,14 +77,12 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "rds_connect" {
+data "aws_iam_policy_document" "rds_proxy_connect" {
   statement {
     effect  = "Allow"
     actions = ["rds-db:connect"]
     resources = [
-      # TODO 최소 권한 원칙 의거해서 수정할 것.
-      # "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${aws_db_proxy.mysql_proxy.id}/${var.db_username}"
-      "*"
+      "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${module.rds.rds_resource_id}/${var.db_username}"
     ]
   }
 
@@ -115,12 +113,89 @@ resource "aws_iam_role" "lambda_rds_connection" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-resource "aws_iam_policy" "rds_connect" {
-  name   = "${var.project_name}-rds-connect-policy"
-  policy = data.aws_iam_policy_document.rds_connect.json
+resource "aws_iam_policy" "rds_proxy_connect" {
+  name   = "${var.project_name}-rds-proxy-connect-policy"
+  policy = data.aws_iam_policy_document.rds_proxy_connect.json
 }
 
 resource "aws_iam_role_policy_attachment" "connect_attach" {
   role       = aws_iam_role.lambda_rds_connection.name
-  policy_arn = aws_iam_policy.rds_connect.arn
+  policy_arn = aws_iam_policy.rds_proxy_connect.arn
+}
+
+# Alert Lambda가 수행할 역할
+# 1. SQS로부터 큐 수신, 전송, 삭제
+# 2. SQS Queue URL이 저장된 SSM을 조회
+# 3. Lambda 로깅 권한
+data "aws_iam_policy_document" "sqs_access" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sqs:SendMessage",
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
+    ]
+    resources = [module.sqs.trade_queue_arn]
+  }
+}
+
+resource "aws_iam_policy" "sqs_access" {
+  name   = "${var.project_name}-${var.env}-sqs-access"
+  policy = data.aws_iam_policy_document.sqs_access.json
+}
+
+data "aws_iam_policy_document" "ssm_access" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters"
+    ]
+    resources = [
+      module.sqs.trade_queue_url_ssm_arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "ssm_access" {
+  name   = "${var.project_name}-sqs-get-policy"
+  policy = data.aws_iam_policy_document.ssm_access.json
+}
+
+data "aws_iam_policy_document" "lambda_logs" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    effect    = "Allow"
+    resources = ["arn:aws:logs:*:*:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_logs" {
+  name   = "${var.project_name}-lambda-log-policy"
+  policy = data.aws_iam_policy_document.lambda_logs.json
+}
+
+resource "aws_iam_role" "fraud_detector" {
+  name               = "${var.project_name}-fraud-detector-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "attach_sqs_access" {
+  role       = aws_iam_role.fraud_detector.name
+  policy_arn = aws_iam_policy.sqs_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_ssm_access" {
+  role       = aws_iam_role.fraud_detector.name
+  policy_arn = aws_iam_policy.ssm_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_log_access" {
+  role       = aws_iam_role.fraud_detector.name
+  policy_arn = aws_iam_policy.lambda_logs.arn
 }

@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "fraud_detector" {
   function_name = "${var.project_name}-fraud-detector"
-  role          = aws_iam_role.fraud_detector.arn
+  role          = var.push_lambda_role_arn
   handler       = "handler.handler" # handler.py의 handler 함수
   runtime       = "python3.11"      # 또는 3.9 / 3.10도 가능
 
@@ -9,3 +9,4 @@ resource "aws_lambda_function" "fraud_detector" {
 
   timeout = 30
 }
+

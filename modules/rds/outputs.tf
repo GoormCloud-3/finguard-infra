@@ -4,6 +4,12 @@ output "rds_endpoint" {
   value       = aws_db_instance.mysql.endpoint
 }
 
+output "rds_resource_id" {
+  description = "rds의 resource id"
+  sensitive   = true
+  value       = aws_db_instance.mysql.resource_id
+}
+
 output "rds_endpoint_ssm" {
   description = "RDS의 엔드포인트가 SSM에 저장된 형태"
   sensitive   = true
@@ -20,4 +26,15 @@ output "rds_proxy_endpoint_ssm" {
   description = "RDS의 엔드포인트가 SSM에 저장된 형태"
   sensitive   = true
   value       = aws_ssm_parameter.rds_proxy_endpoint.value
+}
+
+# RDS Proxy Secrets Manager
+output "rds_proxy_secret" {
+  value       = aws_secretsmanager_secret.rds_secret.arn
+  description = "RDS Proxy가 RDS에 접속하기 위해 사용하는 rds의 Secret 정보"
+}
+
+output "rds_proxy_arn" {
+  value       = aws_db_proxy.mysql_proxy.arn
+  description = "RDS Proxy의 ARN"
 }
