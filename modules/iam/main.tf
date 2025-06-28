@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "rds_proxy_secret_access" {
     effect  = "Allow"
     actions = ["rds-db:connect"]
     resources = [
-      "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${module.rds.rds_resource_id}/${var.db_username}"
+      "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${var.rds_resource_id}/${var.db_username}"
     ]
   }
 
@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "rds_proxy_secret_access" {
       "secretsmanager:DescribeSecret"
     ]
     resources = [
-      module.rds.rds_proxy_secret
+      var.rds_proxy_secret_arn
     ]
   }
 
@@ -48,12 +48,12 @@ data "aws_iam_policy_document" "rds_proxy_secret_access" {
 }
 
 resource "aws_iam_role" "rds_proxy_secret_access" {
-  name               = "${var.project_name}-rds-proxy-role"
+  name               = "${var.project_name}-${var.env}-rds-proxy-role"
   assume_role_policy = data.aws_iam_policy_document.rds_proxy_assume_role.json
 }
 
 resource "aws_iam_policy" "rds_secret_access" {
-  name   = "${var.project_name}-secret-access"
+  name   = "${var.project_name}-${var.env}-secret-access"
   policy = data.aws_iam_policy_document.rds_proxy_secret_access.json
 }
 
@@ -82,7 +82,7 @@ data "aws_iam_policy_document" "rds_proxy_connect" {
     effect  = "Allow"
     actions = ["rds-db:connect"]
     resources = [
-      "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${module.rds.rds_resource_id}/${var.db_username}"
+      "arn:aws:rds-db:${var.region}:${data.aws_caller_identity.current.account_id}:dbuser:${var.rds_resource_id}/${var.db_username}"
     ]
   }
 
@@ -109,12 +109,12 @@ data "aws_iam_policy_document" "rds_proxy_connect" {
 }
 
 resource "aws_iam_role" "lambda_rds_connection" {
-  name               = "${var.project_name}-lambda-rds-role"
+  name               = "${var.project_name}-${var.env}-lambda-rds-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
 resource "aws_iam_policy" "rds_proxy_connect" {
-  name   = "${var.project_name}-rds-proxy-connect-policy"
+  name   = "${var.project_name}-${var.env}-rds-proxy-connect-policy"
   policy = data.aws_iam_policy_document.rds_proxy_connect.json
 }
 
@@ -136,7 +136,7 @@ data "aws_iam_policy_document" "sqs_access" {
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes"
     ]
-    resources = [module.sqs.trade_queue_arn]
+    resources = [var.trade_queue_arn]
   }
 }
 
@@ -153,13 +153,13 @@ data "aws_iam_policy_document" "ssm_access" {
       "ssm:GetParameters"
     ]
     resources = [
-      module.sqs.trade_queue_url_ssm_arn
+      var.trade_queue_url_ssm_arn
     ]
   }
 }
 
 resource "aws_iam_policy" "ssm_access" {
-  name   = "${var.project_name}-sqs-get-policy"
+  name   = "${var.project_name}-${var.env}-sqs-get-policy"
   policy = data.aws_iam_policy_document.ssm_access.json
 }
 
@@ -176,12 +176,12 @@ data "aws_iam_policy_document" "lambda_logs" {
 }
 
 resource "aws_iam_policy" "lambda_logs" {
-  name   = "${var.project_name}-lambda-log-policy"
+  name   = "${var.project_name}-${var.env}-lambda-log-policy"
   policy = data.aws_iam_policy_document.lambda_logs.json
 }
 
 resource "aws_iam_role" "fraud_detector" {
-  name               = "${var.project_name}-fraud-detector-role"
+  name               = "${var.project_name}-${var.env}-fraud-detector-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -198,4 +198,44 @@ resource "aws_iam_role_policy_attachment" "attach_ssm_access" {
 resource "aws_iam_role_policy_attachment" "attach_log_access" {
   role       = aws_iam_role.fraud_detector.name
   policy_arn = aws_iam_policy.lambda_logs.arn
+}
+
+# FCM Trigger Lambda
+# DynamoDB의 Alert Table에 접근 가능한 역할
+data "aws_iam_policy_document" "dynamodb_alert_table_client" {
+  statement {
+    sid    = "DynamoDBTableAccess"
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:Query"
+    ]
+
+    resources = [
+      var.alert_table_arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "dynamodb_alert_table_client" {
+  name   = "${var.project_name}-${var.env}-dynamodb_alert_table_client"
+  policy = data.aws_iam_policy_document.dynamodb_alert_table_client.json
+}
+
+resource "aws_iam_role" "fcm_trigger" {
+  name               = "${var.project_name}-${var.env}-fcm-trigger"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "attach_log_access_to_fcm_trigger" {
+  role       = aws_iam_role.fcm_trigger.name
+  policy_arn = aws_iam_policy.lambda_logs.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_alert_table_access_to_fcm_trigger" {
+  role       = aws_iam_role.fcm_trigger.name
+  policy_arn = aws_iam_policy.dynamodb_alert_table_client.arn
 }

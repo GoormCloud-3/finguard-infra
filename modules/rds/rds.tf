@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "mysql" {
   name       = "mysql-subnet-group"
-  subnet_ids = [for subnet in aws_subnet.private : subnet.id]
+  subnet_ids = var.subnet_ids
   tags = {
     Name = "${var.project_name}-rds"
   }
@@ -30,9 +30,12 @@ resource "aws_db_instance" "mysql" {
 }
 
 resource "aws_secretsmanager_secret" "rds_secret" {
-  name = "${var.project_name}-db-secret"
+  name = "${var.project_name}-${var.env}-db-secret"
 }
 
+# dev 환경 강제 SSM 강제 삭제용.
+# 인프라 지웠다가 다시 만들면 SSM은 보존 기간이 있어서 삭제가 안됨.
+# dev 환경일 시에 SSM을 보존하지 않고 강제로 삭제하게 만듬
 resource "terraform_data" "force_delete_secret" {
   count = var.env == "dev" ? 1 : 0
 
@@ -66,19 +69,19 @@ resource "aws_secretsmanager_secret_version" "rds_secret_version" {
 }
 
 resource "aws_ssm_parameter" "rds_endpoint" {
-  name  = "/${var.project_name}/finance/rds"
+  name  = "/${var.project_name}/${var.env}/finance/rds"
   type  = "String"
   value = aws_db_instance.mysql.address
 }
 
 resource "aws_ssm_parameter" "rds_database" {
-  name  = "/${var.project_name}/finance/rds_database"
+  name  = "/${var.project_name}/${var.env}/finance/rds_database"
   type  = "String"
   value = aws_db_instance.mysql.db_name
 }
 
 resource "aws_ssm_parameter" "rds_username" {
-  name  = "/${var.project_name}/finance/rds_username"
+  name  = "/${var.project_name}/${var.env}/finance/rds_username"
   type  = "String"
   value = var.db_username
 }

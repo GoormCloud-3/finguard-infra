@@ -171,4 +171,3 @@ resource "aws_vpc_security_group_egress_rule" "alert_lambda_to_sns_endpoint" {
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
-

@@ -1,31 +1,95 @@
-resource "aws_vpc" "main" {
-  cidr_block           = local.vpc_cidr
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+module "network" {
+  source = "../modules/network"
 
-  tags = {
-    Name = var.project_name
+  project_name        = local.project_name
+  env                 = local.env
+  main_vpc_cidr_block = "10.0.0.0/16"
+  rds_subnets = {
+    "${local.project_name}-${local.env}-rds-a" = { cidr_block = "10.0.1.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-rds-c" = { cidr_block = "10.0.2.0/24", az = "ap-northeast-2c" }
+  }
+  rds_proxy_subnets = {
+    "${local.project_name}-${local.env}-rdsproxy-a" = { cidr_block = "10.0.3.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-rdsproxy-c" = { cidr_block = "10.0.4.0/24", az = "ap-northeast-2c" }
+  }
+  lambda_subnets = {
+    "${local.project_name}-${local.env}-lambda-a" = { cidr_block = "10.0.11.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-lambda-c" = { cidr_block = "10.0.12.0/24", az = "ap-northeast-2c" }
+  }
+  elasticache_subnets = {
+    "${local.project_name}-${local.env}-elasticache-a" = { cidr_block = "10.0.21.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-elasticache-c" = { cidr_block = "10.0.22.0/24", az = "ap-northeast-2c" }
+  }
+  ssm_endpoint_subnets = {
+    "${local.project_name}-${local.env}-ssm-a" = { cidr_block = "10.0.31.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-ssm-c" = { cidr_block = "10.0.32.0/24", az = "ap-northeast-2c" }
+  }
+  kms_endpoint_subnets = {
+    "${local.project_name}-${local.env}-kms-a" = { cidr_block = "10.0.40.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-kms-c" = { cidr_block = "10.0.41.0/24", az = "ap-northeast-2c" }
+  }
+  sqs_endpoint_subnets = {
+    "${local.project_name}-${local.env}-sqs-a" = { cidr_block = "10.0.33.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-sqs-c" = { cidr_block = "10.0.34.0/24", az = "ap-northeast-2c" }
+  }
+  sns_endpoint_subnets = {
+    "${local.project_name}-${local.env}-sns-a" = { cidr_block = "10.0.37.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-sns-c" = { cidr_block = "10.0.38.0/24", az = "ap-northeast-2c" }
   }
 }
 
-module "sqs" {
-  source               = "../modules/sqs"
-  project_name         = var.project_name
-  env                  = var.env
-  push_lambda_role_arn = aws_iam_role.fraud_detector.arn
+module "iam" {
+  source = "../modules/iam"
+
+  region       = local.region
+  project_name = local.project_name
+  env          = local.env
+  db_username  = local.db_username
+
+  # RDS 모듈에서 필요한 값
+  rds_resource_id      = module.trading_rds.rds_resource_id
+  rds_proxy_secret_arn = module.trading_rds.rds_secret_arn
+
+  # SQS 모듈에서 필요한 값
+  trade_queue_arn         = module.trading_sqs.trade_queue_arn
+  trade_queue_url_ssm_arn = module.trading_sqs.trade_queue_url_ssm_arn
+
+  # DynamoDB 모듈에서 필요한 값
+  alert_table_arn = module.notification_token_table.table_arn
 }
 
-module "rds" {
-  source             = "../modules/rds"
-  vpc_id             = aws_vpc.main.id
-  lambda_sg_id       = aws_security_group.api_lambda.id
-  rds_sg_id          = aws_security_group.rds.id
-  rds_proxy_sg_id    = aws_security_group.rds_proxy.id
-  ssm_endpoint_sg_id = aws_security_group.ssm_vpc_endpoint.id
-  kms_endpoint_sg_id = aws_security_group.kms_vpc_endpoint.id
-  project_name       = var.project_name
-  env                = var.env
-  db_username        = var.db_username
-  db_password        = var.db_password
-  rds_proxy_role_arn = aws_iam_role.rds_proxy_secret_access.arn
+module "trading_sqs" {
+  source = "../modules/sqs"
+
+  project_name = local.project_name
+  env          = local.env
+}
+
+module "trading_rds" {
+  source = "../modules/rds"
+
+  project_name = local.project_name
+  env          = local.env
+  subnet_ids   = module.network.rds_subnet_ids
+  rds_sg_id    = module.network.sg_rds
+  db_username  = local.db_username
+}
+
+module "trading_rds_proxy" {
+  source = "../modules/rds_proxy"
+
+  project_name                     = local.project_name
+  env                              = local.env
+  subnet_ids                       = module.network.rds_proxy_subnet_ids
+  rds_proxy_sg_id                  = module.network.sg_rds_proxy
+  rds_proxy_secret_access_role_arn = module.iam.rds_proxy_secret_access_role_arn
+  rds_secret_arn                   = module.trading_rds.rds_secret_arn
+  rds_identifier                   = module.trading_rds.rds_identifier
+}
+
+module "notification_token_table" {
+  source = "../modules/dynamodb"
+
+  project_name = local.project_name
+  env          = local.env
 }

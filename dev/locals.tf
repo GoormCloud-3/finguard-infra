@@ -1,3 +1,7 @@
 locals {
-  vpc_cidr = "10.10.0.0/16"
+  project_name = "finguard"
+  env          = "dev"
+  db_username  = "admin"
+  region       = "ap-northeast-2"
 }
+

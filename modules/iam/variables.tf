@@ -14,13 +14,8 @@ variable "env" {
   }
 }
 
-variable "subnet_ids" {
-  description = "RDS가 속할 서브넷의 아이디들"
-  type        = list(string)
-}
-
-variable "rds_sg_id" {
-  description = "RDS가 사용할 보안그룹의 ID"
+variable "region" {
+  description = "AWS Region"
   type        = string
 }
 
@@ -30,16 +25,27 @@ variable "db_username" {
   default     = "admin"
 }
 
-variable "db_password" {
-  description = "Master password for MySQL"
+variable "rds_resource_id" {
+  description = "RDS 리소스 ID"
   type        = string
-  sensitive   = true
-  default     = "test1234test!"
+}
 
-  validation {
-    condition = (
-      var.env == "dev" || var.db_password != "test1234test!"
-    )
-    error_message = "dev 환경이 아니면 기본 비밀번호 사용을 금지한다."
-  }
+variable "rds_proxy_secret_arn" {
+  description = "RDS Proxy Secret ARN"
+  type        = string
+}
+
+variable "trade_queue_arn" {
+  description = "SQS Trade Queue ARN"
+  type        = string
+}
+
+variable "trade_queue_url_ssm_arn" {
+  description = "SQS Trade Queue URL SSM ARN"
+  type        = string
+}
+
+variable "alert_table_arn" {
+  description = "DynamoDB Alert Table ARN"
+  type        = string
 }
