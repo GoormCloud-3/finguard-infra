@@ -49,3 +49,8 @@ variable "alert_table_arn" {
   description = "DynamoDB Alert Table ARN"
   type        = string
 }
+
+variable "elasticache_cluster_id" {
+  description = "Elasticache 클러스터의 arn"
+  type        = string
+}

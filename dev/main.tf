@@ -56,6 +56,9 @@ module "iam" {
 
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
+
+  # Elasticache 모듈에서 필요한 값
+  elasticache_cluster_id = module.caching.elasticache_cluster_id
 }
 
 module "trading_sqs" {
@@ -92,4 +95,16 @@ module "notification_token_table" {
 
   project_name = local.project_name
   env          = local.env
+}
+
+module "caching" {
+  source = "../modules/caching"
+
+  cluster_id        = "account"
+  project_name      = local.project_name
+  env               = local.env
+  security_group_id = module.network.sg_elasticache
+  subnet_ids        = module.network.elasticache_subnet_ids
+  node_type         = local.caching.node_type
+  num_cache_nodes   = local.caching.num_cache_nodes
 }

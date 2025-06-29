@@ -239,3 +239,31 @@ resource "aws_iam_role_policy_attachment" "attach_alert_table_access_to_fcm_trig
   role       = aws_iam_role.fcm_trigger.name
   policy_arn = aws_iam_policy.dynamodb_alert_table_client.arn
 }
+
+# elasticache 접근 허용을 위한 정책
+data "aws_iam_policy_document" "elasticache_access" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "elasticache:DescribeCacheClusters",
+      "elasticache:ListTagsForResource"
+    ]
+
+    resources = [
+      "arn:aws:elasticache:${var.region}:${data.aws_caller_identity.current.account_id}:cluster/${var.elasticache_cluster_id}"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "elasticache" {
+  name        = "${var.project_name}-${var.env}-elasticache-client"
+  description = "Allows describing specific ElastiCache cluster"
+
+  policy = data.aws_iam_policy_document.elasticache_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "elasticache" {
+  role       = aws_iam_role.lambda_rds_connection.name
+  policy_arn = aws_iam_policy.elasticache.arn
+}
