@@ -47,18 +47,13 @@ module "iam" {
   db_username  = local.db_username
 
   # RDS 모듈에서 필요한 값
-  rds_resource_id      = module.trading_rds.rds_resource_id
   rds_proxy_secret_arn = module.trading_rds.rds_secret_arn
 
   # SQS 모듈에서 필요한 값
-  trade_queue_arn         = module.trading_sqs.trade_queue_arn
-  trade_queue_url_ssm_arn = module.trading_sqs.trade_queue_url_ssm_arn
+  trade_queue_arn = module.trading_sqs.trade_queue_arn
 
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
-
-  # Elasticache 모듈에서 필요한 값
-  elasticache_cluster_id = module.caching.elasticache_cluster_id
 }
 
 module "trading_sqs" {

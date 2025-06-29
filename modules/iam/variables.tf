@@ -25,11 +25,6 @@ variable "db_username" {
   default     = "admin"
 }
 
-variable "rds_resource_id" {
-  description = "RDS 리소스 ID"
-  type        = string
-}
-
 variable "rds_proxy_secret_arn" {
   description = "RDS Proxy Secret ARN"
   type        = string
@@ -40,17 +35,12 @@ variable "trade_queue_arn" {
   type        = string
 }
 
-variable "trade_queue_url_ssm_arn" {
-  description = "SQS Trade Queue URL SSM ARN"
-  type        = string
-}
-
 variable "alert_table_arn" {
   description = "DynamoDB Alert Table ARN"
   type        = string
 }
 
-variable "elasticache_cluster_id" {
-  description = "Elasticache 클러스터의 arn"
-  type        = string
+variable "sns_topic_name" {
+  type    = string
+  default = "*"
 }
