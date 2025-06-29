@@ -62,14 +62,14 @@ module "iam" {
 }
 
 module "trading_sqs" {
-  source = "../modules/sqs"
+  source = "../modules/finance_trading_queue"
 
   project_name = local.project_name
   env          = local.env
 }
 
 module "trading_rds" {
-  source = "../modules/rds"
+  source = "../modules/finance_db"
 
   project_name = local.project_name
   env          = local.env
@@ -79,7 +79,7 @@ module "trading_rds" {
 }
 
 module "trading_rds_proxy" {
-  source = "../modules/rds_proxy"
+  source = "../modules/finance_db_proxy"
 
   project_name                     = local.project_name
   env                              = local.env
@@ -91,14 +91,14 @@ module "trading_rds_proxy" {
 }
 
 module "notification_token_table" {
-  source = "../modules/dynamodb"
+  source = "../modules/finance_noti_table"
 
   project_name = local.project_name
   env          = local.env
 }
 
 module "caching" {
-  source = "../modules/caching"
+  source = "../modules/finance_caching"
 
   cluster_id        = "account"
   project_name      = local.project_name
