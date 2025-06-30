@@ -5,6 +5,9 @@ resource "aws_vpc_endpoint" "ssm" {
   subnet_ids          = [for s in aws_subnet.endpoint_subnets : s.id]
   security_group_ids  = [aws_security_group.ssm_vpc_endpoint.id]
   private_dns_enabled = true
+  tags = {
+    Name = "${var.project_name}-${var.env}-ssm"
+  }
 }
 
 resource "aws_vpc_endpoint" "kms" {
@@ -14,6 +17,9 @@ resource "aws_vpc_endpoint" "kms" {
   subnet_ids          = [for s in aws_subnet.endpoint_subnets : s.id]
   security_group_ids  = [aws_security_group.kms_vpc_endpoint.id]
   private_dns_enabled = true
+  tags = {
+    Name = "${var.project_name}-${var.env}-kms"
+  }
 }
 
 resource "aws_vpc_endpoint" "sns" {
@@ -23,6 +29,9 @@ resource "aws_vpc_endpoint" "sns" {
   subnet_ids          = [for s in aws_subnet.endpoint_subnets : s.id]
   security_group_ids  = [aws_security_group.sns_vpc_endpoint.id]
   private_dns_enabled = true
+  tags = {
+    Name = "${var.project_name}-${var.env}-sns"
+  }
 }
 
 resource "aws_vpc_endpoint" "sqs" {
@@ -32,6 +41,9 @@ resource "aws_vpc_endpoint" "sqs" {
   subnet_ids          = [for s in aws_subnet.endpoint_subnets : s.id]
   security_group_ids  = [aws_security_group.sqs_vpc_endpoint.id]
   private_dns_enabled = true
+  tags = {
+    Name = "${var.project_name}-${var.env}-sqs"
+  }
 }
 
 resource "aws_vpc_endpoint" "dynamodb" {
@@ -41,4 +53,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
   route_table_ids = [
     aws_route_table.private_with_dynamodb.id
   ]
+  tags = {
+    Name = "${var.project_name}-${var.env}-dynamodb"
+  }
 }
