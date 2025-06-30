@@ -4,13 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: '배포할 환경 (dev, main, prod)'
+        description: "배포할 환경 (dev, main, prod)"
         required: true
-        default: 'dev'
+        default: "dev"
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC 토큰 발급 허용
+      contents: read # repository read 권한 (checkout용)
     env:
       AWS_REGION: ap-northeast-2
       S3_BUCKET: my-terraform-logs
@@ -24,13 +27,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: arn:aws:iam::123456789012:role/github-actions-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/finguard-terraform-admin
           role-session-name: GitHubTerraformSession
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.7.5
+          terraform_version: 1.12.2
 
       - name: Terraform Init
         run: terraform -chdir=${{ env.TF_DIR }} init
@@ -74,10 +77,10 @@ jobs:
           ENV=${{ github.event.inputs.environment }}
           FILE_NAME="apply-${REPO}-${TS}-${ENV}.txt"
           aws s3api put-object \
-            --bucket ${{ env.S3_BUCKET }} \
+            --bucket ${{ secrets.S3_PLAN_BUCKET }} \
             --key "$FILE_NAME" \
             --body apply.txt
-          URL=$(aws s3 presign s3://${{ env.S3_BUCKET }}/$FILE_NAME --expires-in 3600)
+          URL=$(aws s3 presign s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME --expires-in 3600)
           echo "$URL" > apply_url.txt
 
       - name: Send Slack Message (Apply)
@@ -119,4 +122,3 @@ jobs:
               }
             ]
           }" ${{ secrets.SLACK_WEBHOOK_URL }}
-
