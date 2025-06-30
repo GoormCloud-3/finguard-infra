@@ -3,10 +3,10 @@ name: Pre-commit on feature branches
 on:
   push:
     branches:
-      - '**'
+      - "**"
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   lint:
@@ -20,13 +20,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12.3'
+          python-version: "3.12.3"
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.11.4
-          
+
       - name: Install TFLint
         run: |
           curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
@@ -35,7 +35,7 @@ jobs:
         run: pip install pre-commit
 
       - name: Run pre-commit hooks
-        run: pre-commit run --all-files
+        run: pre-commit run --all-files --show-diff-on-failure
 
       - name: Send Slack notification on failure
         if: failure()
