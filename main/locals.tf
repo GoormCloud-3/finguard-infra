@@ -1,11 +1,11 @@
 locals {
   project_name = "finguard"
-  env          = "dev"
+  env          = "prod"
   region       = "ap-northeast-2"
   db_username  = "admin"
 
   # 기본 VPC CIDR
-  main_vpc_cidr_block = "10.0.0.0/16"
+  main_vpc_cidr_block = "10.10.0.0/16"
 
   # /24씩 쪼개기 위한 인덱스 기준
   subnet_base_indexes = {
