@@ -8,11 +8,6 @@ output "rds_subnet_ids" {
   value       = [for s in aws_subnet.rds_subnets : s.id]
 }
 
-output "rds_proxy_subnet_ids" {
-  description = "RDS Proxy 서브넷들의 ID"
-  value       = [for s in aws_subnet.rds_proxy_subnets : s.id]
-}
-
 output "lambda_subnet_ids" {
   description = "Lambda 서브넷들의 ID"
   value       = [for s in aws_subnet.lambda_subnets : s.id]
@@ -23,19 +18,9 @@ output "elasticache_subnet_ids" {
   value       = [for s in aws_subnet.elasticache_subnets : s.id]
 }
 
-output "ssm_endpoint_subnet_ids" {
-  description = "SSM VPC Endpoint용 서브넷들의 ID"
-  value       = [for s in aws_subnet.ssm_endpoint_subnets : s.id]
-}
-
-output "sqs_endpoint_subnet_ids" {
-  description = "SQS VPC Endpoint용 서브넷들의 ID"
-  value       = [for s in aws_subnet.sqs_endpoint_subnets : s.id]
-}
-
-output "sns_endpoint_subnet_ids" {
-  description = "SNS VPC Endpoint용 서브넷들의 ID"
-  value       = [for s in aws_subnet.sns_endpoint_subnets : s.id]
+output "endpoint_subnet_ids" {
+  description = "VPC Endpoint용 서브넷들의 ID"
+  value       = [for s in aws_subnet.endpoint_subnets : s.id]
 }
 
 # 보안그룹

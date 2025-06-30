@@ -15,12 +15,6 @@ output "rds_resource_id" {
   value       = aws_db_instance.mysql.resource_id
 }
 
-output "rds_endpoint_ssm" {
-  description = "RDS의 엔드포인트가 SSM에 저장된 형태"
-  sensitive   = true
-  value       = aws_ssm_parameter.rds_endpoint.value
-}
-
 # RDS Proxy Secrets Manager
 output "rds_secret_arn" {
   value       = aws_secretsmanager_secret.rds_secret.arn

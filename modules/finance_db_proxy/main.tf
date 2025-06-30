@@ -26,7 +26,7 @@ resource "aws_db_proxy_target" "mysql_proxy_target" {
 
 # RDS Proxy endpoint
 resource "aws_ssm_parameter" "rds_proxy_endpoint" {
-  name  = "/${var.project_name}/${var.env}/finance/rds_proxy"
+  name  = "/${var.project_name}/${var.env}/finance/rds_proxy_hostname"
   type  = "String"
   value = aws_db_proxy.mysql_proxy.endpoint
 }

@@ -68,20 +68,14 @@ resource "aws_secretsmanager_secret_version" "rds_secret_version" {
   })
 }
 
-resource "aws_ssm_parameter" "rds_endpoint" {
-  name  = "/${var.project_name}/${var.env}/finance/rds"
-  type  = "String"
-  value = aws_db_instance.mysql.address
-}
-
 resource "aws_ssm_parameter" "rds_database" {
-  name  = "/${var.project_name}/${var.env}/finance/rds_database"
+  name  = "/${var.project_name}/${var.env}/finance/rds_db_name"
   type  = "String"
   value = aws_db_instance.mysql.db_name
 }
 
 resource "aws_ssm_parameter" "rds_username" {
-  name  = "/${var.project_name}/${var.env}/finance/rds_username"
+  name  = "/${var.project_name}/${var.env}/finance/rds_db_username"
   type  = "String"
   value = var.db_username
 }

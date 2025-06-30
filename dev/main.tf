@@ -8,10 +8,6 @@ module "network" {
     "${local.project_name}-${local.env}-rds-a" = { cidr_block = "10.0.1.0/24", az = "ap-northeast-2a" }
     "${local.project_name}-${local.env}-rds-c" = { cidr_block = "10.0.2.0/24", az = "ap-northeast-2c" }
   }
-  rds_proxy_subnets = {
-    "${local.project_name}-${local.env}-rdsproxy-a" = { cidr_block = "10.0.3.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-rdsproxy-c" = { cidr_block = "10.0.4.0/24", az = "ap-northeast-2c" }
-  }
   lambda_subnets = {
     "${local.project_name}-${local.env}-lambda-a" = { cidr_block = "10.0.11.0/24", az = "ap-northeast-2a" }
     "${local.project_name}-${local.env}-lambda-c" = { cidr_block = "10.0.12.0/24", az = "ap-northeast-2c" }
@@ -20,21 +16,13 @@ module "network" {
     "${local.project_name}-${local.env}-elasticache-a" = { cidr_block = "10.0.21.0/24", az = "ap-northeast-2a" }
     "${local.project_name}-${local.env}-elasticache-c" = { cidr_block = "10.0.22.0/24", az = "ap-northeast-2c" }
   }
-  ssm_endpoint_subnets = {
-    "${local.project_name}-${local.env}-ssm-a" = { cidr_block = "10.0.31.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-ssm-c" = { cidr_block = "10.0.32.0/24", az = "ap-northeast-2c" }
+  endpoint_subnets = {
+    "${local.project_name}-${local.env}-vpc-endpoint-a" = { cidr_block = "10.0.31.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-vpc-endpoint-b" = { cidr_block = "10.0.32.0/24", az = "ap-northeast-2c" }
   }
-  kms_endpoint_subnets = {
-    "${local.project_name}-${local.env}-kms-a" = { cidr_block = "10.0.40.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-kms-c" = { cidr_block = "10.0.41.0/24", az = "ap-northeast-2c" }
-  }
-  sqs_endpoint_subnets = {
-    "${local.project_name}-${local.env}-sqs-a" = { cidr_block = "10.0.33.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-sqs-c" = { cidr_block = "10.0.34.0/24", az = "ap-northeast-2c" }
-  }
-  sns_endpoint_subnets = {
-    "${local.project_name}-${local.env}-sns-a" = { cidr_block = "10.0.37.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-sns-c" = { cidr_block = "10.0.38.0/24", az = "ap-northeast-2c" }
+  public_subnets = {
+    "${local.project_name}-${local.env}-public-a" = { cidr_block = "10.0.41.0/24", az = "ap-northeast-2a" }
+    "${local.project_name}-${local.env}-public-b" = { cidr_block = "10.0.42.0/24", az = "ap-northeast-2c" }
   }
 }
 
@@ -78,7 +66,7 @@ module "trading_rds_proxy" {
 
   project_name                     = local.project_name
   env                              = local.env
-  subnet_ids                       = module.network.rds_proxy_subnet_ids
+  subnet_ids                       = module.network.rds_subnet_ids
   rds_proxy_sg_id                  = module.network.sg_rds_proxy
   rds_proxy_secret_access_role_arn = module.iam.rds_proxy_secret_access_role_arn
   rds_secret_arn                   = module.trading_rds.rds_secret_arn

@@ -18,20 +18,20 @@ variable "main_vpc_cidr_block" {
   description = "main VPC의 cidr_block"
 }
 
+variable "public_subnets" {
+  type = map(object({
+    cidr_block = string
+    az         = string
+  }))
+  description = "Public Subnet으로 IGW를 통해서 인터넷과 통신이 가능"
+}
+
 variable "rds_subnets" {
   type = map(object({
     cidr_block = string
     az         = string
   }))
   description = "RDS가 속할 서브넷들. key는 서브넷의 이름이 된다."
-}
-
-variable "rds_proxy_subnets" {
-  type = map(object({
-    cidr_block = string
-    az         = string
-  }))
-  description = "RDS Proxy가 속할 서브넷들. key는 서브넷의 이름이 된다."
 }
 
 variable "lambda_subnets" {
@@ -50,34 +50,10 @@ variable "elasticache_subnets" {
   description = "ElastiCache가 속할 서브넷들. key는 서브넷의 이름이 된다."
 }
 
-variable "ssm_endpoint_subnets" {
+variable "endpoint_subnets" {
   type = map(object({
     cidr_block = string
     az         = string
   }))
-  description = "SSM VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
-}
-
-variable "kms_endpoint_subnets" {
-  type = map(object({
-    cidr_block = string
-    az         = string
-  }))
-  description = "kms VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
-}
-
-variable "sqs_endpoint_subnets" {
-  type = map(object({
-    cidr_block = string
-    az         = string
-  }))
-  description = "SQS VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
-}
-
-variable "sns_endpoint_subnets" {
-  type = map(object({
-    cidr_block = string
-    az         = string
-  }))
-  description = "SNS VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
+  description = "VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
 }

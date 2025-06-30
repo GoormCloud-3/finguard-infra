@@ -43,6 +43,11 @@ resource "aws_iam_role_policy_attachment" "api_lambda_to_send_msg_to_trade_queue
   role       = aws_iam_role.lambda_rds_connection.name
   policy_arn = aws_iam_policy.sqs_send_message.arn
 }
+
+resource "aws_iam_role_policy_attachment" "api_lambda_to_crud_noti_table" {
+  role       = aws_iam_role.fraud_detector.name
+  policy_arn = aws_iam_policy.dynamodb_alert_table_client.arn
+}
 # Fraud Check Lambda가 수행할 역할
 # 1. SQS로부터 큐 수신, 전송, 삭제
 # 2. SQS Queue URL이 저장된 SSM을 조회

@@ -10,7 +10,7 @@ resource "aws_dynamodb_table" "notification" {
 }
 
 resource "aws_ssm_parameter" "table_name" {
-  name  = "/${var.project_name}/${var.env}/notification/name"
+  name  = "/${var.project_name}/${var.env}/finance/notification_table_name"
   type  = "String"
   value = aws_dynamodb_table.notification.name
 }

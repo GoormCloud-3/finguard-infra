@@ -20,7 +20,7 @@ resource "aws_elasticache_cluster" "default" {
 }
 
 resource "aws_ssm_parameter" "elasticache_endpoint" {
-  name  = "/${var.project_name}/${var.env}/finance/redis/host"
+  name  = "/${var.project_name}/${var.env}/finance/redis_host"
   type  = "String"
   value = aws_elasticache_cluster.default.cache_nodes[0].address
 }
