@@ -3,7 +3,7 @@ terraform {
 
   backend "s3" {
     bucket         = "finguard-infra-terraform"
-    key            = "terraform/dev/terraform.tfstate"
+    key            = "terraform/${local.env}/terraform.tfstate"
     encrypt        = true
     dynamodb_table = "terraform-lock"
     region         = "ap-northeast-2"
