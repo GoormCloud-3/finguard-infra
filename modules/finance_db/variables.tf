@@ -43,3 +43,9 @@ variable "db_password" {
     error_message = "dev 환경이 아니면 기본 비밀번호 사용을 금지한다."
   }
 }
+
+variable "public_accessible" {
+  description = "RDS 퍼블릭 접속 허용 여부"
+  type        = bool
+  default     = false
+}

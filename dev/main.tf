@@ -54,11 +54,12 @@ module "trading_sqs" {
 module "trading_rds" {
   source = "../modules/finance_db"
 
-  project_name = local.project_name
-  env          = local.env
-  subnet_ids   = module.network.rds_subnet_ids
-  rds_sg_id    = module.network.sg_rds
-  db_username  = local.db_username
+  project_name      = local.project_name
+  env               = local.env
+  subnet_ids        = module.network.rds_subnet_ids
+  rds_sg_id         = module.network.sg_rds
+  db_username       = local.db_username
+  public_accessible = true
 }
 
 module "trading_rds_proxy" {
