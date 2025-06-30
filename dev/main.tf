@@ -6,7 +6,7 @@ module "network" {
   main_vpc_cidr_block = "10.0.0.0/16"
   public_subnets = {
     "${local.project_name}-${local.env}-public-a" = { cidr_block = "10.0.1.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-public-b" = { cidr_block = "10.0.2.0/24", az = "ap-northeast-2c" }
+    "${local.project_name}-${local.env}-public-c" = { cidr_block = "10.0.2.0/24", az = "ap-northeast-2c" }
   }
   rds_subnets = {
     "${local.project_name}-${local.env}-rds-a" = { cidr_block = "10.0.11.0/24", az = "ap-northeast-2a" }
@@ -22,7 +22,7 @@ module "network" {
   }
   endpoint_subnets = {
     "${local.project_name}-${local.env}-vpc-endpoint-a" = { cidr_block = "10.0.41.0/24", az = "ap-northeast-2a" }
-    "${local.project_name}-${local.env}-vpc-endpoint-b" = { cidr_block = "10.0.42.0/24", az = "ap-northeast-2c" }
+    "${local.project_name}-${local.env}-vpc-endpoint-c" = { cidr_block = "10.0.42.0/24", az = "ap-northeast-2c" }
   }
 }
 
