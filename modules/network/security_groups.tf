@@ -8,8 +8,8 @@ resource "aws_security_group" "rds_proxy" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_security_group" "api_lambda" {
-  name   = "${var.project_name}-${var.env}-api-lambda"
+resource "aws_security_group" "backend" {
+  name   = "${var.project_name}-${var.env}-backend"
   vpc_id = aws_vpc.main.id
 }
 
@@ -34,8 +34,8 @@ resource "aws_security_group" "sqs_vpc_endpoint" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_security_group" "alert_lambda" {
-  name   = "${var.project_name}-${var.env}-alert-lambda"
+resource "aws_security_group" "notification_sender" {
+  name   = "${var.project_name}-${var.env}-notification-sender"
   vpc_id = aws_vpc.main.id
 }
 
@@ -50,7 +50,6 @@ resource "aws_security_group" "sns_vpc_endpoint" {
 }
 
 # === Ingress Rules ===
-
 resource "aws_vpc_security_group_ingress_rule" "rds_from_proxy" {
   security_group_id            = aws_security_group.rds.id
   referenced_security_group_id = aws_security_group.rds_proxy.id
@@ -59,9 +58,9 @@ resource "aws_vpc_security_group_ingress_rule" "rds_from_proxy" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "rds_proxy_from_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "rds_proxy_from_backend" {
   security_group_id            = aws_security_group.rds_proxy.id
-  referenced_security_group_id = aws_security_group.api_lambda.id
+  referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 3306
   to_port                      = 3306
   ip_protocol                  = "tcp"
@@ -69,7 +68,7 @@ resource "aws_vpc_security_group_ingress_rule" "rds_proxy_from_lambda" {
 
 resource "aws_vpc_security_group_ingress_rule" "elasticache_from_lambda" {
   security_group_id            = aws_security_group.elasticache.id
-  referenced_security_group_id = aws_security_group.api_lambda.id
+  referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 6379
   to_port                      = 6379
   ip_protocol                  = "tcp"
@@ -77,15 +76,15 @@ resource "aws_vpc_security_group_ingress_rule" "elasticache_from_lambda" {
 
 resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_lambda" {
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.api_lambda.id
+  referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_alert_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_notification_sender" {
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.alert_lambda.id
+  referenced_security_group_id = aws_security_group.notification_sender.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -93,7 +92,7 @@ resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_alert_lambda" 
 
 resource "aws_vpc_security_group_ingress_rule" "kms_endpoint_from_lambda" {
   security_group_id            = aws_security_group.kms_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.api_lambda.id
+  referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -101,23 +100,23 @@ resource "aws_vpc_security_group_ingress_rule" "kms_endpoint_from_lambda" {
 
 resource "aws_vpc_security_group_ingress_rule" "sqs_endpoint_from_lambda" {
   security_group_id            = aws_security_group.sqs_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.api_lambda.id
+  referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "dynamodb_endpoint_from_alert_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "dynamodb_endpoint_from_notification_sender" {
   security_group_id            = aws_security_group.dynamodb_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.alert_lambda.id
+  referenced_security_group_id = aws_security_group.notification_sender.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_alert_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_notification_sender" {
   security_group_id            = aws_security_group.sns_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.alert_lambda.id
+  referenced_security_group_id = aws_security_group.notification_sender.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -125,7 +124,7 @@ resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_alert_lambda" 
 
 # === Egress Rules ===
 resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_proxy" {
-  security_group_id            = aws_security_group.api_lambda.id
+  security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.rds_proxy.id
   from_port                    = 3306
   to_port                      = 3306
@@ -141,7 +140,7 @@ resource "aws_vpc_security_group_egress_rule" "rds_proxy_to_rds" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_elasticache" {
-  security_group_id            = aws_security_group.api_lambda.id
+  security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.elasticache.id
   from_port                    = 6379
   to_port                      = 6379
@@ -149,15 +148,15 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_elasticache" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_endpoints" {
-  security_group_id            = aws_security_group.api_lambda.id
+  security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.ssm_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "alert_lambda_to_endpoints" {
-  security_group_id            = aws_security_group.alert_lambda.id
+resource "aws_vpc_security_group_egress_rule" "notification_sender_to_endpoints" {
+  security_group_id            = aws_security_group.notification_sender.id
   referenced_security_group_id = aws_security_group.ssm_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
@@ -165,23 +164,23 @@ resource "aws_vpc_security_group_egress_rule" "alert_lambda_to_endpoints" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_sqs_endpoint" {
-  security_group_id            = aws_security_group.api_lambda.id
+  security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.sqs_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "alert_lambda_to_dynamodb_endpoint" {
-  security_group_id            = aws_security_group.alert_lambda.id
+resource "aws_vpc_security_group_egress_rule" "notification_sender_to_dynamodb_endpoint" {
+  security_group_id            = aws_security_group.notification_sender.id
   referenced_security_group_id = aws_security_group.dynamodb_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "alert_lambda_to_sns_endpoint" {
-  security_group_id            = aws_security_group.alert_lambda.id
+resource "aws_vpc_security_group_egress_rule" "notification_sender_to_sns_endpoint" {
+  security_group_id            = aws_security_group.notification_sender.id
   referenced_security_group_id = aws_security_group.sns_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443

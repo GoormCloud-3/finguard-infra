@@ -34,9 +34,9 @@ output "sg_rds_proxy" {
   value       = aws_security_group.rds_proxy.id
 }
 
-output "sg_api_lambda" {
+output "sg_backend" {
   description = "API Lambda Security Group ID"
-  value       = aws_security_group.api_lambda.id
+  value       = aws_security_group.backend.id
 }
 
 output "sg_ssm_vpc_endpoint" {
@@ -61,7 +61,7 @@ output "sg_sqs_vpc_endpoint" {
 
 output "sg_alert_lambda" {
   description = "Alert Lambda Security Group ID"
-  value       = aws_security_group.alert_lambda.id
+  value       = aws_security_group.notification_sender.id
 }
 
 output "sg_dynamodb_vpc_endpoint" {

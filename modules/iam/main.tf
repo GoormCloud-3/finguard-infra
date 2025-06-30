@@ -15,7 +15,7 @@ resource "aws_iam_role_policy_attachment" "secret_attach" {
 # RDS에 Private Subnet을 통해 접근하기 위해선 ENI 인터페이스가 필요하므로
 # ENI 생성 정책이 필요하다.
 resource "aws_iam_role" "lambda_rds_connection" {
-  name               = "${var.project_name}-${var.env}-api-lambda"
+  name               = "${var.project_name}-${var.env}-backend"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -53,7 +53,7 @@ resource "aws_iam_role_policy_attachment" "api_lambda_to_crud_noti_table" {
 # 2. SQS Queue URL이 저장된 SSM을 조회
 # 3. Lambda 로깅 권한
 resource "aws_iam_role" "fraud_detector" {
-  name               = "${var.project_name}-${var.env}-fraud-check"
+  name               = "${var.project_name}-${var.env}-fraud-checker"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -87,14 +87,14 @@ resource "aws_iam_role_policy_attachment" "fraud_detector_to_send_msg_to_sns" {
   policy_arn = aws_iam_policy.sns_send.arn
 }
 
-# FCM Trigger Lambda
+# notification Trigger Lambda
 # DynamoDB의 Alert Table에 접근 가능한 역할
-resource "aws_iam_role" "fcm_sender" {
-  name               = "${var.project_name}-${var.env}-fcm-sender"
+resource "aws_iam_role" "notification_sender" {
+  name               = "${var.project_name}-${var.env}-notification-sender"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "fcm_sender_to_save_log" {
-  role       = aws_iam_role.fcm_sender.name
+resource "aws_iam_role_policy_attachment" "notification_sender_to_save_log" {
+  role       = aws_iam_role.notification_sender.name
   policy_arn = aws_iam_policy.lambda_logs.arn
 }
