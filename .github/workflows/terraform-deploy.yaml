@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "배포할 환경 (dev, main, prod)"
+        description: "배포할 환경 (dev, main)"
         required: true
         default: "dev"
 
