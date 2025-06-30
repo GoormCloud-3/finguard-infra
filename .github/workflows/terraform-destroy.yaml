@@ -1,19 +1,19 @@
-name: Terraform Manual Deploy
+name: Terraform Manual Destroy
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "배포할 환경 (dev, main)"
+        description: "삭제할 환경 (dev, main)"
         required: true
         default: "dev"
 
 jobs:
-  terraform:
+  terraform-destroy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # OIDC 토큰 발급 허용
-      contents: read # repository read 권한 (checkout용)
+      id-token: write
+      contents: read
     env:
       AWS_REGION: ap-northeast-2
       S3_BUCKET: my-terraform-logs
@@ -28,7 +28,7 @@ jobs:
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/finguard-terraform-admin
-          role-session-name: GitHubTerraformSession
+          role-session-name: GitHubTerraformDestroy
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -38,69 +38,44 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=${{ env.TF_DIR }} init
 
-      - name: Terraform Plan
-        id: plan
+      - name: Terraform Destroy
+        id: destroy
         run: |
-          terraform -chdir=${{ env.TF_DIR }} plan -no-color > plan.txt
+          terraform -chdir=${{ env.TF_DIR }} destroy -auto-approve -no-color > destroy.txt
 
-      - name: Upload Plan to S3 and Presign URL
-        id: upload_plan
+      - name: Upload Destroy Log to S3 and Presign URL
+        id: upload_destroy
         run: |
           REPO=${GITHUB_REPOSITORY##*/}
           TS=$(date +%Y%m%d-%H%M%S)
           ENV=${{ github.event.inputs.environment }}
-          FILE_NAME="${REPO}-plan-${TS}-${ENV}.txt"
+          FILE_NAME="destroy-${REPO}-${TS}-${ENV}.txt"
           aws s3api put-object \
             --bucket ${{ secrets.S3_PLAN_BUCKET }} \
             --key "$FILE_NAME" \
-            --body plan.txt
+            --body destroy.txt
           URL=$(aws s3 presign s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME --expires-in 3600)
-          echo "$URL" > plan_url.txt
+          echo "$URL" > destroy_url.txt
 
-      - name: Send Slack Message (Plan)
+      - name: Send Slack Message (Destroy)
         run: |
-          URL=$(cat plan_url.txt)
-          MSG="✅ *Terraform Plan (${{ github.event.inputs.environment }}) complete*\n🔗 $URL"
+          URL=$(cat destroy_url.txt)
+          MSG="⚠️ *Terraform Destroy (${{ github.event.inputs.environment }}) complete*\n🔗 $URL"
           PAYLOAD=$(jq -n --arg text "$MSG" '{text: $text}')
           curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Terraform Apply
-        id: apply
-        run: |
-          terraform -chdir=${{ env.TF_DIR }} apply -auto-approve -no-color > apply.txt
-
-      - name: Upload Apply to S3 and Presign URL
-        id: upload_apply
-        run: |
-          REPO=${GITHUB_REPOSITORY##*/}
-          TS=$(date +%Y%m%d-%H%M%S)
-          ENV=${{ github.event.inputs.environment }}
-          FILE_NAME="apply-${REPO}-${TS}-${ENV}.txt"
-          aws s3api put-object \
-            --bucket ${{ secrets.S3_PLAN_BUCKET }} \
-            --key "$FILE_NAME" \
-            --body apply.txt
-          URL=$(aws s3 presign s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME --expires-in 3600)
-          echo "$URL" > apply_url.txt
-
-      - name: Send Slack Message (Apply)
-        run: |
-          URL=$(cat apply_url.txt)
-          MSG="🚀 *Terraform Apply (${{ github.event.inputs.environment }}) complete*\n🔗 $URL"
-          PAYLOAD=$(jq -n --arg text "$MSG" '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Send Slack notification on failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"*❌ Terraform Workflow Failed (${GITHUB_REF_NAME})*\",
+            \"text\": \"*❌ Terraform Destroy Workflow Failed (${GITHUB_REF_NAME})*\",
             \"blocks\": [
               {
                 \"type\": \"section\",
                 \"text\": {
                   \"type\": \"mrkdwn\",
-                  \"text\": \"*Some step failed in <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|this workflow>*\"
+                  \"text\": \"*Destroy 실패 in <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|this workflow>*\"
                 }
               },
               {

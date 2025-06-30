@@ -44,6 +44,7 @@ module "trading_rds" {
   subnet_ids        = module.network.rds_subnet_ids
   rds_sg_id         = module.network.sg_rds
   db_username       = local.db_username
+  db_password       = data.aws_ssm_parameter.db_password.value
   public_accessible = true
 }
 
