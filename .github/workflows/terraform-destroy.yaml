@@ -46,54 +46,64 @@ jobs:
       - name: Upload Destroy Log to S3 and Presign URL
         id: upload_destroy
         run: |
-          REPO=${GITHUB_REPOSITORY##*/}
-          TS=$(date +%Y%m%d-%H%M%S)
-          ENV=${{ github.event.inputs.environment }}
-          FILE_NAME="destroy-${REPO}-${TS}-${ENV}.txt"
+          REPO="${GITHUB_REPOSITORY##*/}"
+          TS="$(date +%Y%m%d-%H%M%S)"
+          ENV="${{ github.event.inputs.environment }}"
+          FILE_NAME="${REPO}-destroy-${TS}-${ENV}.txt"
+          
           aws s3api put-object \
-            --bucket ${{ secrets.S3_PLAN_BUCKET }} \
+            --bucket "${{ secrets.S3_PLAN_BUCKET }}" \
             --key "$FILE_NAME" \
             --body destroy.txt
-          URL=$(aws s3 presign s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME --expires-in 3600)
-          echo "$URL" > destroy_url.txt
+
+          PRESIGNED_URL=$(aws s3 presign "s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME" --expires-in 3600)
+          
+          # 출력 정리
+          echo "$PRESIGNED_URL" > destroy_url.txt
+          echo "url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
 
       - name: Send Slack Message (Destroy)
-        run: |
-          URL=$(cat destroy_url.txt)
-          MSG="⚠️ *Terraform Destroy (${{ github.event.inputs.environment }}) complete*\n🔗 $URL"
-          PAYLOAD=$(jq -n --arg text "$MSG" '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: ":warning: *Terraform Destroy `${{ github.event.inputs.environment }}` complete*"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":warning: *Terraform Destroy `${{ github.event.inputs.environment }}` 완료됨*"
+              - type: actions
+                elements:
+                  - type: button
+                    text:
+                      type: plain_text
+                      text: "Destroy 결과 확인"
+                      emoji: true
+                    url: "${{ steps.upload_destroy.outputs.url }}"
+                    style: danger
 
       - name: Send Slack notification on failure
         if: failure()
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data "{
-            \"text\": \"*❌ Terraform Destroy Workflow Failed (${GITHUB_REF_NAME})*\",
-            \"blocks\": [
-              {
-                \"type\": \"section\",
-                \"text\": {
-                  \"type\": \"mrkdwn\",
-                  \"text\": \"*Destroy 실패 in <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|this workflow>*\"
-                }
-              },
-              {
-                \"type\": \"section\",
-                \"fields\": [
-                  {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"*Actor:*\n<https://github.com/${GITHUB_ACTOR}|${GITHUB_ACTOR}>\"
-                  },
-                  {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"*Commit:*\n<https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}|${GITHUB_SHA}>\"
-                  },
-                  {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"*Environment:*\n${{ github.event.inputs.environment }}\"
-                  }
-                ]
-              }
-            ]
-          }" ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: ":x: *Terraform Destroy Workflow Failed (`${{ github.ref_name }}`)*"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "*❌ Terraform Destroy 실패 발생*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow 실행 내역 보기>"
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: "*Actor:*\n<https://github.com/${{ github.actor }}|${{ github.actor }}>"
+                  - type: mrkdwn
+                    text: "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  - type: mrkdwn
+                    text: "*Environment:*\n`${{ github.event.inputs.environment }}`"

@@ -58,11 +58,23 @@ jobs:
           echo "$URL" > plan_url.txt
 
       - name: Send Slack Message (Plan)
-        run: |
-          URL=$(cat plan_url.txt)
-          MSG="✅ *Terraform Plan (${{ github.event.inputs.environment }}) complete*\n🔗 $URL"
-          PAYLOAD=$(jq -n --arg text "$MSG" '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: ":white_check_mark: *Terraform Plan (${{ github.event.inputs.environment }}) complete*"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":white_check_mark: *Terraform Plan `${{ github.event.inputs.environment }}` complete*"
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<$(cat plan_url.txt | tr -d '\n')|View full plan log>"
+
 
       - name: Terraform Apply
         id: apply
@@ -75,7 +87,7 @@ jobs:
           REPO=${GITHUB_REPOSITORY##*/}
           TS=$(date +%Y%m%d-%H%M%S)
           ENV=${{ github.event.inputs.environment }}
-          FILE_NAME="apply-${REPO}-${TS}-${ENV}.txt"
+          FILE_NAME="${REPO}-apply-${TS}-${ENV}.txt"
           aws s3api put-object \
             --bucket ${{ secrets.S3_PLAN_BUCKET }} \
             --key "$FILE_NAME" \
@@ -84,41 +96,49 @@ jobs:
           echo "$URL" > apply_url.txt
 
       - name: Send Slack Message (Apply)
-        run: |
-          URL=$(cat apply_url.txt)
-          MSG="🚀 *Terraform Apply (${{ github.event.inputs.environment }}) complete*\n🔗 $URL"
-          PAYLOAD=$(jq -n --arg text "$MSG" '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: ":rocket: *Terraform Apply `${{ github.event.inputs.environment }}` complete*"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":rocket: *Terraform Apply `${{ github.event.inputs.environment }}` 완료됨*"
+              - type: actions
+                elements:
+                  - type: button
+                    text:
+                      type: plain_text
+                      text: "Apply 결과 확인"
+                      emoji: true
+                    url: "$(cat apply_url.txt | tr -d '\n')"
+                    style: primary
+
       - name: Send Slack notification on failure
         if: failure()
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data "{
-            \"text\": \"*❌ Terraform Workflow Failed (${GITHUB_REF_NAME})*\",
-            \"blocks\": [
-              {
-                \"type\": \"section\",
-                \"text\": {
-                  \"type\": \"mrkdwn\",
-                  \"text\": \"*Some step failed in <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|this workflow>*\"
-                }
-              },
-              {
-                \"type\": \"section\",
-                \"fields\": [
-                  {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"*Actor:*\n<https://github.com/${GITHUB_ACTOR}|${GITHUB_ACTOR}>\"
-                  },
-                  {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"*Commit:*\n<https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}|${GITHUB_SHA}>\"
-                  },
-                  {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"*Environment:*\n${{ github.event.inputs.environment }}\"
-                  }
-                ]
-              }
-            ]
-          }" ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: ":x: *Terraform Workflow Failed (${{
+              github.ref_name
+            }})*"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "*❌ Terraform Workflow Failed on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|this workflow>*"
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: "*Actor:*\n<https://github.com/${{ github.actor }}|${{ github.actor }}>"
+                  - type: mrkdwn
+                    text: "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  - type: mrkdwn
+                    text: "*Environment:*\n`${{ github.event.inputs.environment }}`"
