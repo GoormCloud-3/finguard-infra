@@ -44,6 +44,19 @@ resource "aws_security_group" "kms_vpc_endpoint" {
   vpc_id      = aws_vpc.main.id
 }
 
+resource "aws_security_group" "ecr_vpc_endpoint" {
+  name   = "${var.project_name}-${var.env}-ecr-vpc-endpoint"
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ecr_endpoint_from_ml" {
+  security_group_id            = aws_security_group.ecr_vpc_endpoint.id
+  referenced_security_group_id = aws_security_group.ml_server.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
 resource "aws_security_group" "elasticache" {
   name   = "${var.project_name}-${var.env}-elasticache"
   vpc_id = aws_vpc.main.id
@@ -54,9 +67,37 @@ resource "aws_security_group" "sqs_vpc_endpoint" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_security_group" "notification_sender" {
-  name   = "${var.project_name}-${var.env}-notification-sender"
+resource "aws_security_group" "fraud_checker" {
+  name   = "${var.project_name}-${var.env}-fraud-checker"
   vpc_id = aws_vpc.main.id
+}
+
+# Inbount 
+# fraud-checker로부터 443 접근 허용해야함.
+
+# Outbount
+# ml server(sagemaker)는 S3 연결(게이트웨이라서 엔드포인트 추가하고 라우트 테이블 추가하면 됨)
+# ECR VPC Endpoint에 접근 가능해야함.
+
+resource "aws_security_group" "ml_server" {
+  name   = "${var.project_name}-${var.env}-ml-server"
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ml_server_from_fraud_checker" {
+  security_group_id            = aws_security_group.ml_server.id
+  referenced_security_group_id = aws_security_group.fraud_checker.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "ml_server_to_ecr_vpc_endpoint" {
+  security_group_id            = aws_security_group.ml_server.id
+  referenced_security_group_id = aws_security_group.ecr_vpc_endpoint.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
 }
 
 resource "aws_security_group" "dynamodb_vpc_endpoint" {
@@ -112,9 +153,9 @@ resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_lambda" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_notification_sender" {
+resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_fraud_checker" {
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.notification_sender.id
+  referenced_security_group_id = aws_security_group.fraud_checker.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -136,17 +177,17 @@ resource "aws_vpc_security_group_ingress_rule" "sqs_endpoint_from_lambda" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "dynamodb_endpoint_from_notification_sender" {
+resource "aws_vpc_security_group_ingress_rule" "dynamodb_endpoint_from_fraud_checker" {
   security_group_id            = aws_security_group.dynamodb_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.notification_sender.id
+  referenced_security_group_id = aws_security_group.fraud_checker.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_notification_sender" {
+resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_fraud_checker" {
   security_group_id            = aws_security_group.sns_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.notification_sender.id
+  referenced_security_group_id = aws_security_group.fraud_checker.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -185,8 +226,8 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_endpoints" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "notification_sender_to_endpoints" {
-  security_group_id            = aws_security_group.notification_sender.id
+resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_endpoints" {
+  security_group_id            = aws_security_group.fraud_checker.id
   referenced_security_group_id = aws_security_group.ssm_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
@@ -201,17 +242,25 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_sqs_endpoint" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "notification_sender_to_dynamodb_endpoint" {
-  security_group_id            = aws_security_group.notification_sender.id
+resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_dynamodb_endpoint" {
+  security_group_id            = aws_security_group.fraud_checker.id
   referenced_security_group_id = aws_security_group.dynamodb_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "notification_sender_to_sns_endpoint" {
-  security_group_id            = aws_security_group.notification_sender.id
+resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_sns_endpoint" {
+  security_group_id            = aws_security_group.fraud_checker.id
   referenced_security_group_id = aws_security_group.sns_vpc_endpoint.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_ecr_endpoint" {
+  security_group_id            = aws_security_group.fraud_checker.id
+  referenced_security_group_id = aws_security_group.ecr_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
