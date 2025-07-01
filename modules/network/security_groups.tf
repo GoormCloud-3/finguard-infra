@@ -1,3 +1,23 @@
+resource "aws_security_group" "allow_all" {
+  name        = "${var.project_name}-${var.env}-public"
+  description = "Allow all inbound and outbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "rds" {
   name   = "${var.project_name}-${var.env}-rds"
   vpc_id = aws_vpc.main.id
