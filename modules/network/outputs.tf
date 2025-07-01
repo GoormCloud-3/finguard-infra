@@ -64,9 +64,14 @@ output "sg_sqs_vpc_endpoint" {
   value       = aws_security_group.sqs_vpc_endpoint.id
 }
 
-output "sg_alert_lambda" {
-  description = "Alert Lambda Security Group ID"
-  value       = aws_security_group.notification_sender.id
+output "sg_fraud_checker" {
+  description = "sagemaker에서 위법 여부를 확인할 컴퓨팅 리소스의 보안 그룹"
+  value       = aws_security_group.fraud_checker.id
+}
+
+output "sg_ml_endpoint" {
+  description = "sagemaker의 엔드포인트에서 사용할 보안그룹"
+  value       = aws_security_group.ml_server.id
 }
 
 output "sg_dynamodb_vpc_endpoint" {
