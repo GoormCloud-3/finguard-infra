@@ -55,7 +55,7 @@ jobs:
             --key "$FILE_NAME" \
             --body plan.txt
           URL=$(aws s3 presign s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME --expires-in 3600)
-          echo "$URL" > plan_url.txt
+          echo "PLAN_URL=$URL" >> $GITHUB_ENV
 
       - name: Send Slack Message (Plan)
         uses: slackapi/slack-github-action@v2.1.0
@@ -73,8 +73,7 @@ jobs:
               - type: context
                 elements:
                   - type: mrkdwn
-                    text: "<$(cat plan_url.txt | tr -d '\n')|View full plan log>"
-
+                    text: "<${{ env.PLAN_URL }}|View full plan log>"
 
       - name: Terraform Apply
         id: apply
@@ -93,7 +92,7 @@ jobs:
             --key "$FILE_NAME" \
             --body apply.txt
           URL=$(aws s3 presign s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME --expires-in 3600)
-          echo "$URL" > apply_url.txt
+          echo "APPLY_URL=$URL" >> $GITHUB_ENV
 
       - name: Send Slack Message (Apply)
         uses: slackapi/slack-github-action@v2.1.0
@@ -102,7 +101,7 @@ jobs:
           method: chat.postMessage
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: ":rocket: *Terraform Apply `${{ github.event.inputs.environment }}` complete*"
+            text: ":rocket: *Terraform Apply `${{ github.event.inputs.environment }}` 완료*"
             blocks:
               - type: section
                 text:
@@ -115,7 +114,7 @@ jobs:
                       type: plain_text
                       text: "Apply 결과 확인"
                       emoji: true
-                    url: "$(cat apply_url.txt | tr -d '\n')"
+                    url: "${{ env.APPLY_URL }}"
                     style: primary
 
       - name: Send Slack notification on failure
@@ -126,7 +125,7 @@ jobs:
           method: chat.postMessage
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: ":x: *Terraform Workflow Failed (${{
+            text: ":x: *Terraform 배포 액션 실패 (${{
               github.ref_name
             }})*"
             blocks:
