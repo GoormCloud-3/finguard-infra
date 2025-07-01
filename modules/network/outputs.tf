@@ -24,6 +24,11 @@ output "endpoint_subnet_ids" {
 }
 
 # 보안그룹
+output "sg_public" {
+  description = "RDS Security Group ID"
+  value       = aws_security_group.allow_all.id
+}
+
 output "sg_rds" {
   description = "RDS Security Group ID"
   value       = aws_security_group.rds.id
