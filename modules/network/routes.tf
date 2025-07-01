@@ -21,7 +21,6 @@ resource "aws_route_table_association" "dynamodb" {
   route_table_id = aws_route_table.private_with_dynamodb.id
 }
 
-# Route Table
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
   tags = {
@@ -35,14 +34,16 @@ resource "aws_route" "public_igw_route" {
   gateway_id             = aws_internet_gateway.igw.id
 }
 
-resource "aws_route_table_association" "igw" {
+resource "aws_route_table_association" "public_subnet_with_public_route" {
   for_each = aws_subnet.public_subnets
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public_rt.id
 }
 
-resource "aws_route_table_association" "dev_rds" {
+
+# 개발 환경인 경우엔 Public Route Table을 RDS가 사용하도록
+resource "aws_route_table_association" "dev_rds_subnet_with_public_route" {
   for_each = var.env == "dev" ? aws_subnet.rds_subnets : {}
 
   subnet_id      = each.value.id
