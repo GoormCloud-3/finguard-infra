@@ -78,6 +78,16 @@ resource "aws_vpc_security_group_ingress_rule" "rds_from_proxy" {
   ip_protocol                  = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "rds_from_public" {
+  count = var.env == "dev" ? 1 : 0
+
+  security_group_id = aws_security_group.rds.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 3306
+  to_port           = 3306
+  ip_protocol       = "tcp"
+}
+
 resource "aws_vpc_security_group_ingress_rule" "rds_proxy_from_backend" {
   security_group_id            = aws_security_group.rds_proxy.id
   referenced_security_group_id = aws_security_group.backend.id

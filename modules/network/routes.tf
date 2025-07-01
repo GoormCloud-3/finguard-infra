@@ -41,3 +41,10 @@ resource "aws_route_table_association" "igw" {
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public_rt.id
 }
+
+resource "aws_route_table_association" "dev_rds" {
+  for_each = var.env == "dev" ? aws_subnet.rds_subnets : {}
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public_rt.id
+}
