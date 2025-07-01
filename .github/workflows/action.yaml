@@ -47,7 +47,7 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: "*❌ Pre-commit failed on branch `${{ github.ref_name }}`*"
+                  text: "*❌ Pre-commit failed on branch ${{ github.ref_name }}*"
               - type: section
                 fields:
                   - type: mrkdwn
