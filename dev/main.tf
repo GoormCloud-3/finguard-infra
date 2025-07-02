@@ -29,7 +29,7 @@ module "iam" {
   alert_table_arn = module.notification_token_table.table_arn
 
   # SageMaker 버켓에 필요한 값
-  ml_bucket_arn = module.finance_fraud_s3_bucket.bucket_arn
+  ml_bucket_arn = data.aws_s3_bucket.ml_model_bucket.arn
 }
 
 module "trading_sqs" {
@@ -82,16 +82,11 @@ module "caching" {
   num_cache_nodes   = local.caching.num_cache_nodes
 }
 
-# SageMaker에서 사용할 S3 버켓
-module "finance_fraud_s3_bucket" {
-  source = "../modules/finance_ml_s3"
-
-  project_name = local.project_name
-  env          = local.env
-}
-
-# 
 module "finance_fraud_trading_check_ml" {
   source = "../modules/finance_ml"
 
+  sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
+  project_name                 = local.project_name
+  env                          = local.env
+  bucket_name                  = data.aws_s3_bucket.ml_model_bucket.bucket
 }

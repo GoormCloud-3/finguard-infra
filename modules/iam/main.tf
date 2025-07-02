@@ -105,7 +105,12 @@ resource "aws_iam_role" "sagemaker_execution_role" {
   assume_role_policy = data.aws_iam_policy_document.sagemaker_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "sagemaker_attach" {
+resource "aws_iam_role_policy_attachment" "sagemaker_attach_s3_access" {
   role       = aws_iam_role.sagemaker_execution_role.name
   policy_arn = aws_iam_policy.sagemaker_s3_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "sagemaker_attach_ecr_access" {
+  role       = aws_iam_role.sagemaker_execution_role.name
+  policy_arn = aws_iam_policy.sagemaker_ecr_access_policy.arn
 }

@@ -221,3 +221,32 @@ data "aws_iam_policy_document" "sagemaker_s3_access" {
     ]
   }
 }
+
+data "aws_ecr_repository" "fraud_check" {
+  name = "finguard/fraud-check-ml"
+}
+
+data "aws_iam_policy_document" "sagemaker_ecr_access_policy" {
+  statement {
+    sid    = "ECRPullAccess"
+    effect = "Allow"
+
+    actions = [
+      "ecr:GetAuthorizationToken"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ECRImageAccess"
+    effect = "Allow"
+
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage"
+    ]
+
+    resources = [data.aws_ecr_repository.fraud_check.arn]
+  }
+}
