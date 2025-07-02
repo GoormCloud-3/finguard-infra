@@ -84,22 +84,6 @@ resource "aws_security_group" "ml_server" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ml_server_from_fraud_checker" {
-  security_group_id            = aws_security_group.ml_server.id
-  referenced_security_group_id = aws_security_group.fraud_checker.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
-}
-
-resource "aws_vpc_security_group_egress_rule" "ml_server_to_ecr_vpc_endpoint" {
-  security_group_id            = aws_security_group.ml_server.id
-  referenced_security_group_id = aws_security_group.ecr_vpc_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
-}
-
 resource "aws_security_group" "dynamodb_vpc_endpoint" {
   name   = "${var.project_name}-${var.env}-dynamodb-vpc-endpoint"
   vpc_id = aws_vpc.main.id

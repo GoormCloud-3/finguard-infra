@@ -9,7 +9,6 @@ module "network" {
   lambda_subnets      = local.lambda_subnets
   elasticache_subnets = local.elasticache_subnets
   endpoint_subnets    = local.endpoint_subnets
-  ml_subnets          = local.ml_subnets
 }
 
 module "iam" {
