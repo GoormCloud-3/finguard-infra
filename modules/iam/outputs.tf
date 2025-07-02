@@ -5,3 +5,7 @@ output "fraud_detector_role_arn" {
 output "rds_proxy_secret_access_role_arn" {
   value = aws_iam_role.rds_proxy_secret_access.arn
 }
+
+output "sage_maker_execution_role_arn" {
+  value = aws_iam_role.sagemaker_execution_role.arn
+}

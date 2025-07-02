@@ -27,6 +27,9 @@ module "iam" {
 
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
+
+  # SageMaker 버켓에 필요한 값
+  ml_bucket_arn = module.finance_fraud_s3_bucket.bucket_arn
 }
 
 module "trading_sqs" {
@@ -77,4 +80,18 @@ module "caching" {
   subnet_ids        = module.network.elasticache_subnet_ids
   node_type         = local.caching.node_type
   num_cache_nodes   = local.caching.num_cache_nodes
+}
+
+# SageMaker에서 사용할 S3 버켓
+module "finance_fraud_s3_bucket" {
+  source = "../modules/finance_ml_s3"
+
+  project_name = local.project_name
+  env          = local.env
+}
+
+# 
+module "finance_fraud_trading_check_ml" {
+  source = "../modules/finance_ml"
+
 }

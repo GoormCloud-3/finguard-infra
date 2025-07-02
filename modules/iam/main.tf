@@ -98,3 +98,14 @@ resource "aws_iam_role_policy_attachment" "notification_sender_to_save_log" {
   role       = aws_iam_role.notification_sender.name
   policy_arn = aws_iam_policy.lambda_logs.arn
 }
+
+# Sagemaker의 권한
+resource "aws_iam_role" "sagemaker_execution_role" {
+  name               = "${var.project_name}-${var.env}-sagemaker-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.sagemaker_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "sagemaker_attach" {
+  role       = aws_iam_role.sagemaker_execution_role.name
+  policy_arn = aws_iam_policy.sagemaker_s3_access_policy.arn
+}
