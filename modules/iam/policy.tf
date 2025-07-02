@@ -50,3 +50,13 @@ resource "aws_iam_policy" "sns_receive" {
   name   = "${var.project_name}-${var.env}-sns-receive"
   policy = data.aws_iam_policy_document.sns_receive.json
 }
+
+resource "aws_iam_policy" "sagemaker_s3_access_policy" {
+  name   = "${var.project_name}-${var.env}-sagemaker-s3-access"
+  policy = data.aws_iam_policy_document.sagemaker_s3_access.json
+}
+
+resource "aws_iam_policy" "sagemaker_ecr_access_policy" {
+  name   = "${var.project_name}-${var.env}-sagemaker-ecr-fraud-image-access"
+  policy = data.aws_iam_policy_document.sagemaker_ecr_access_policy.json
+}

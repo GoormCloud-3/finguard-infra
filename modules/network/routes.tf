@@ -22,13 +22,6 @@ resource "aws_route_table" "private_with_s3" {
   }
 }
 
-resource "aws_route_table_association" "s3" {
-  for_each = aws_subnet.ml_subnets
-
-  subnet_id      = each.value.id
-  route_table_id = aws_route_table.private_with_s3.id
-}
-
 resource "aws_route_table_association" "dynamodb" {
   for_each = aws_subnet.lambda_subnets
 

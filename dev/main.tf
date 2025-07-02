@@ -9,7 +9,6 @@ module "network" {
   lambda_subnets      = local.lambda_subnets
   elasticache_subnets = local.elasticache_subnets
   endpoint_subnets    = local.endpoint_subnets
-  ml_subnets          = local.ml_subnets
 }
 
 module "iam" {
@@ -28,6 +27,9 @@ module "iam" {
 
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
+
+  # SageMaker 버켓에 필요한 값
+  ml_bucket_arn = data.aws_s3_bucket.ml_model_bucket.arn
 }
 
 module "trading_sqs" {
@@ -78,4 +80,13 @@ module "caching" {
   subnet_ids        = module.network.elasticache_subnet_ids
   node_type         = local.caching.node_type
   num_cache_nodes   = local.caching.num_cache_nodes
+}
+
+module "finance_fraud_trading_check_ml" {
+  source = "../modules/finance_ml"
+
+  sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
+  project_name                 = local.project_name
+  env                          = local.env
+  bucket_name                  = data.aws_s3_bucket.ml_model_bucket.bucket
 }

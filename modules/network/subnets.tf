@@ -52,14 +52,3 @@ resource "aws_subnet" "endpoint_subnets" {
     Name = each.key
   }
 }
-
-resource "aws_subnet" "ml_subnets" {
-  for_each = var.ml_subnets
-
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = each.value.cidr_block
-  availability_zone = each.value.az
-  tags = {
-    Name = each.key
-  }
-}

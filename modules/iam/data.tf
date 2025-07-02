@@ -192,3 +192,61 @@ data "aws_iam_policy_document" "sns_receive" {
     ]
   }
 }
+
+# Sagemaker S3 접근 권한
+data "aws_iam_policy_document" "sagemaker_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["sagemaker.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "sagemaker_s3_access" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:ListBucket"
+    ]
+
+    resources = [
+      var.ml_bucket_arn,
+      "${var.ml_bucket_arn}/*"
+    ]
+  }
+}
+
+data "aws_ecr_repository" "fraud_check" {
+  name = "finguard/fraud-check-ml"
+}
+
+data "aws_iam_policy_document" "sagemaker_ecr_access_policy" {
+  statement {
+    sid    = "ECRPullAccess"
+    effect = "Allow"
+
+    actions = [
+      "ecr:GetAuthorizationToken"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ECRImageAccess"
+    effect = "Allow"
+
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage"
+    ]
+
+    resources = [data.aws_ecr_repository.fraud_check.arn]
+  }
+}

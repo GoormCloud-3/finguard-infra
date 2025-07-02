@@ -44,3 +44,8 @@ variable "sns_topic_name" {
   type    = string
   default = "*"
 }
+
+variable "ml_bucket_arn" {
+  description = "SageMaker가 사용할 버켓의 arn"
+  type        = string
+}
