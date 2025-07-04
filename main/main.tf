@@ -21,12 +21,12 @@ module "iam" {
 
   # RDS 모듈에서 필요한 값
   rds_proxy_secret_arn = module.trading_rds.rds_secret_arn
-
   # SQS 모듈에서 필요한 값
   trade_queue_arn = module.trading_sqs.trade_queue_arn
-
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
+  # SageMaker 버켓에 필요한 값
+  ml_bucket_arn = data.aws_s3_bucket.ml_model_bucket.arn
 }
 
 module "trading_sqs" {

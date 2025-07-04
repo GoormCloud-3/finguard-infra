@@ -57,11 +57,3 @@ variable "endpoint_subnets" {
   }))
   description = "VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
 }
-
-variable "ml_subnets" {
-  type = map(object({
-    cidr_block = string
-    az         = string
-  }))
-  description = "ML 서버가 속할 서브넷들. key는 서브넷의 이름이 된다."
-}

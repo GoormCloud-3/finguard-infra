@@ -14,7 +14,6 @@ locals {
     lambda      = 21
     elasticache = 31
     endpoint    = 41
-    ml          = 51
   }
 
   # subnet function (az index → 0=a, 1=c)
@@ -69,17 +68,6 @@ locals {
     }
     "${local.project_name}-${local.env}-vpc-endpoint-c" = {
       cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.endpoint + 1)
-      az         = "${local.region}c"
-    }
-  }
-
-  ml_subnets = {
-    "${local.project_name}-${local.env}-vpc-endpoint-a" = {
-      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.ml + 0)
-      az         = "${local.region}a"
-    }
-    "${local.project_name}-${local.env}-vpc-endpoint-c" = {
-      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.ml + 1)
       az         = "${local.region}c"
     }
   }

@@ -69,11 +69,6 @@ output "sg_fraud_checker" {
   value       = aws_security_group.fraud_checker.id
 }
 
-output "sg_ml_endpoint" {
-  description = "sagemaker의 엔드포인트에서 사용할 보안그룹"
-  value       = aws_security_group.ml_server.id
-}
-
 output "sg_dynamodb_vpc_endpoint" {
   description = "DynamoDB VPC Endpoint Security Group ID"
   value       = aws_security_group.dynamodb_vpc_endpoint.id
