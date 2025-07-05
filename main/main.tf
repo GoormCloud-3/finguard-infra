@@ -1,3 +1,4 @@
+
 module "network" {
   source = "../modules/network"
 
@@ -21,10 +22,13 @@ module "iam" {
 
   # RDS 모듈에서 필요한 값
   rds_proxy_secret_arn = module.trading_rds.rds_secret_arn
+
   # SQS 모듈에서 필요한 값
   trade_queue_arn = module.trading_sqs.trade_queue_arn
+
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
+
   # SageMaker 버켓에 필요한 값
   ml_bucket_arn = data.aws_s3_bucket.ml_model_bucket.arn
 }
@@ -42,7 +46,7 @@ module "trading_rds" {
   project_name      = local.project_name
   env               = local.env
   subnet_ids        = module.network.rds_subnet_ids
-  rds_sg_id         = module.network.sg_rds
+  rds_sg_id         = module.network.rds_sg_id
   db_username       = local.db_username
   db_password       = data.aws_ssm_parameter.db_password.value
   public_accessible = true
@@ -54,7 +58,7 @@ module "trading_rds_proxy" {
   project_name                     = local.project_name
   env                              = local.env
   subnet_ids                       = module.network.rds_subnet_ids
-  rds_proxy_sg_id                  = module.network.sg_rds_proxy
+  rds_proxy_sg_id                  = module.network.rds_proxy_sg_id
   rds_proxy_secret_access_role_arn = module.iam.rds_proxy_secret_access_role_arn
   rds_secret_arn                   = module.trading_rds.rds_secret_arn
   rds_identifier                   = module.trading_rds.rds_identifier
@@ -70,11 +74,19 @@ module "notification_token_table" {
 module "caching" {
   source = "../modules/finance_caching"
 
-  cluster_id        = "account"
   project_name      = local.project_name
   env               = local.env
-  security_group_id = module.network.sg_elasticache
+  security_group_id = module.network.elasticache_sg_id
   subnet_ids        = module.network.elasticache_subnet_ids
   node_type         = local.caching.node_type
   num_cache_nodes   = local.caching.num_cache_nodes
+}
+
+module "finance_fraud_trading_check_ml" {
+  source = "../modules/finance_ml"
+
+  project_name                 = local.project_name
+  env                          = local.env
+  sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
+  bucket_name                  = data.aws_s3_bucket.ml_model_bucket.bucket
 }

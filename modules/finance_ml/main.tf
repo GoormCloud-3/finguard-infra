@@ -5,7 +5,7 @@ resource "aws_sagemaker_model" "fraud_model" {
   primary_container {
     image          = "${data.aws_ecr_repository.fraud_check.repository_url}:${var.env}"
     mode           = "SingleModel"
-    model_data_url = "s3://${var.bucket_name}/models/fraud-model.tar.gz"
+    model_data_url = "s3://${var.bucket_name}/models/${var.env}/fraud-model.tar.gz"
     environment = {
       SAGEMAKER_PROGRAM = "serve.py"
       SAGEMAKER_REGION  = "ap-northeast-2"
