@@ -13,11 +13,6 @@ variable "env" {
   }
 }
 
-variable "cluster_id" {
-  description = "Elasticache Cluster ID"
-  type        = string
-}
-
 variable "engine" {
   description = "Engine type (redis or memcached)"
   type        = string

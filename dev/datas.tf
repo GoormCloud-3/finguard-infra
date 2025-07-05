@@ -4,5 +4,5 @@ data "aws_ssm_parameter" "db_password" {
 }
 
 data "aws_s3_bucket" "ml_model_bucket" {
-  bucket = "${local.project_name}-${local.env}-model-bucket"
+  bucket = "${local.project_name}-fraud-model"
 }
