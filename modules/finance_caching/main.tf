@@ -1,11 +1,11 @@
 resource "aws_elasticache_subnet_group" "caching" {
-  name        = "${var.project_name}-${var.env}-${var.cluster_id}"
+  name        = "${var.project_name}-${var.env}-account"
   subnet_ids  = var.subnet_ids
-  description = "Elasticache subnet group for ${var.cluster_id}"
+  description = "Elasticache subnet group for account"
 }
 
 resource "aws_elasticache_cluster" "default" {
-  cluster_id           = var.cluster_id
+  cluster_id           = "${var.project_name}-${var.env}-account"
   engine               = var.engine
   node_type            = var.node_type
   num_cache_nodes      = var.num_cache_nodes
@@ -15,7 +15,7 @@ resource "aws_elasticache_cluster" "default" {
   port                 = 6379
 
   tags = {
-    Name = "${var.project_name}-${var.env}-${var.cluster_id}"
+    Name = "${var.project_name}-${var.env}-account"
   }
 }
 

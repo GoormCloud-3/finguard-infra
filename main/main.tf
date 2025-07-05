@@ -76,7 +76,6 @@ module "caching" {
 
   project_name      = local.project_name
   env               = local.env
-  cluster_id        = "account"
   security_group_id = module.network.elasticache_sg_id
   subnet_ids        = module.network.elasticache_subnet_ids
   node_type         = local.caching.node_type
