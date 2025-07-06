@@ -27,6 +27,25 @@ resource "aws_db_instance" "mysql" {
   tags = {
     Name = "${var.project_name}-rds"
   }
+
+
+  # check "rds_public_access_check" {
+  # assert {
+  #   condition     = var.env == "dev" || aws_db_instance.mysql.publicly_accessible == false
+  #   error_message = "prod/stage에서는 RDS는 public access가 되면 안 됩니다."
+  # }
+  # }
+}
+
+check "rds_public_access_check" {
+  assert {
+    condition = (
+      (var.env == "prod" || var.env == "stage") ?
+      aws_db_instance.mysql.publicly_accessible == false :
+      true
+    )
+    error_message = "prod/stage에서는 RDS는 public access가 되면 안 됩니다."
+  }
 }
 
 resource "aws_secretsmanager_secret" "rds_secret" {

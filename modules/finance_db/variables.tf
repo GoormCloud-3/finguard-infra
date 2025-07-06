@@ -17,11 +17,21 @@ variable "env" {
 variable "subnet_ids" {
   description = "RDS가 속할 서브넷의 아이디들"
   type        = list(string)
+
+  validation {
+    condition     = length(var.subnet_ids) >= 1
+    error_message = "RDS의 서브넷은 최소 1개 이상 필요합니다."
+  }
 }
 
 variable "rds_sg_id" {
   description = "RDS가 사용할 보안그룹의 ID"
   type        = string
+
+  validation {
+    condition     = length(var.rds_sg_id) > 0
+    error_message = "rds_sg_id의 내용이 비었습니다."
+  }
 }
 
 variable "db_username" {
@@ -34,14 +44,6 @@ variable "db_password" {
   description = "Master password for MySQL"
   type        = string
   sensitive   = true
-  default     = "test1234test!"
-
-  validation {
-    condition = (
-      var.env == "dev" || var.db_password != "test1234test!"
-    )
-    error_message = "dev 환경이 아니면 기본 비밀번호 사용을 금지한다."
-  }
 }
 
 variable "public_accessible" {

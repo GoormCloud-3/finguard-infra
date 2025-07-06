@@ -19,4 +19,5 @@ output "rds_resource_id" {
 output "rds_secret_arn" {
   value       = aws_secretsmanager_secret.rds_secret.arn
   description = "RDS Proxy가 RDS에 접속하기 위해 사용하는 rds의 Secret 정보"
+  sensitive   = true
 }
