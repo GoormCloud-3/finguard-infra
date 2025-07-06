@@ -4,15 +4,15 @@ run "when_env_is_not_dev_prod_stage_then_throw_error" {
   command = plan
 
   variables {
-    env = "test"
-    subnet_ids = ["test1", "test2"]
-    rds_sg_id = "sg-id"
+    env         = "test"
+    subnet_ids  = ["test1", "test2"]
+    rds_sg_id   = "sg-id"
     db_password = "test"
   }
 
-  expect_failures = [ 
+  expect_failures = [
     var.env
-  ]  
+  ]
 }
 
 run "when_subnet_ids_is_empty_then_fail" {
