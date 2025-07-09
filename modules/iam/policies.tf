@@ -36,9 +36,14 @@ resource "aws_iam_policy" "sqs_consumer" {
   policy = data.aws_iam_policy_document.sqs_consumer.json
 }
 
-resource "aws_iam_policy" "dynamodb_alert_table_client" {
-  name   = "${var.project_name}-${var.env}-dynamodb-alert-table-client"
-  policy = data.aws_iam_policy_document.dynamodb_alert_table_client.json
+resource "aws_iam_policy" "notification_table_crud" {
+  name   = "${var.project_name}-${var.env}-dynamodb-notification-table-crud"
+  policy = data.aws_iam_policy_document.notification_table_crud.json
+}
+
+resource "aws_iam_policy" "notification_table_select" {
+  name   = "${var.project_name}-${var.env}-dynamodb-notification-table-select"
+  policy = data.aws_iam_policy_document.notification_table_select.json
 }
 
 resource "aws_iam_policy" "sns_send" {
@@ -59,4 +64,9 @@ resource "aws_iam_policy" "sagemaker_s3_access_policy" {
 resource "aws_iam_policy" "sagemaker_ecr_access_policy" {
   name   = "${var.project_name}-${var.env}-sagemaker-ecr-fraud-image-access"
   policy = data.aws_iam_policy_document.sagemaker_ecr_access_policy.json
+}
+
+resource "aws_iam_policy" "sagemaker_invoke_function" {
+  name   = "${var.project_name}-${var.env}-sagemaker-invoke-function"
+  policy = data.aws_iam_policy_document.sagemaker_invoke_endpoint_policy.json
 }

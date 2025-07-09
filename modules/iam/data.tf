@@ -128,6 +128,10 @@ data "aws_iam_policy_document" "ssm_get_finguard_param" {
 }
 
 # Lambda log
+data "aws_iam_policy" "xray_write" {
+  name = "AWSXRayDaemonWriteAccess"
+}
+
 data "aws_iam_policy_document" "lambda_logs" {
   statement {
     actions = [
@@ -141,7 +145,7 @@ data "aws_iam_policy_document" "lambda_logs" {
 }
 
 # DynamoDB Alert Table CRUD
-data "aws_iam_policy_document" "dynamodb_alert_table_client" {
+data "aws_iam_policy_document" "notification_table_crud" {
   statement {
     sid    = "DynamoDBTableAccess"
     effect = "Allow"
@@ -152,6 +156,26 @@ data "aws_iam_policy_document" "dynamodb_alert_table_client" {
       "dynamodb:UpdateItem",
       "dynamodb:Query",
       "dynamodb:DeleteItem",
+      "dynamodb:Scan",
+      "dynamodb:DescribeTable"
+    ]
+
+    resources = [
+      var.alert_table_arn
+    ]
+  }
+}
+
+# fraud-detector가 사용할 정책 
+# 단순 조회만 가능
+data "aws_iam_policy_document" "notification_table_select" {
+  statement {
+    sid    = "DynamoDBTableAccess"
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:Query",
       "dynamodb:Scan",
       "dynamodb:DescribeTable"
     ]
@@ -250,3 +274,19 @@ data "aws_iam_policy_document" "sagemaker_ecr_access_policy" {
     resources = [data.aws_ecr_repository.fraud_check.arn]
   }
 }
+
+data "aws_iam_policy_document" "sagemaker_invoke_endpoint_policy" {
+  statement {
+    sid    = "InvokeSageMakerEndpoint"
+    effect = "Allow"
+
+    actions = [
+      "sagemaker:InvokeEndpoint"
+    ]
+
+    resources = [
+      "arn:aws:sagemaker:${var.region}:${data.aws_caller_identity.current.account_id}:endpoint/${var.sagemaker_endpoint_name}"
+    ]
+  }
+}
+
