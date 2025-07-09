@@ -72,23 +72,17 @@ resource "aws_security_group" "fraud_checker" {
   vpc_id = aws_vpc.main.id
 }
 
-# Inbount 
-# fraud-checker로부터 443 접근 허용해야함.
-
-# Outbount
-# ml server(sagemaker)는 S3 연결(게이트웨이라서 엔드포인트 추가하고 라우트 테이블 추가하면 됨)
-# ECR VPC Endpoint에 접근 가능해야함.
 
 resource "aws_security_group" "ml_server" {
   name   = "${var.project_name}-${var.env}-ml-server"
   vpc_id = aws_vpc.main.id
 }
+# Ingress
+# fraud-checker로부터 443 접근 허용해야함.
 
-resource "aws_security_group" "dynamodb_vpc_endpoint" {
-  name   = "${var.project_name}-${var.env}-dynamodb-vpc-endpoint"
-  vpc_id = aws_vpc.main.id
-}
-
+# egress
+# ml server(sagemaker)는 S3 연결(게이트웨이라서 엔드포인트 추가하고 라우트 테이블 추가하면 됨)
+# ECR VPC Endpoint에 접근 가능해야함.
 resource "aws_security_group" "sns_vpc_endpoint" {
   name   = "${var.project_name}-${var.env}-sns-vpc-endpoint"
   vpc_id = aws_vpc.main.id
@@ -161,14 +155,6 @@ resource "aws_vpc_security_group_ingress_rule" "sqs_endpoint_from_lambda" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "dynamodb_endpoint_from_fraud_checker" {
-  security_group_id            = aws_security_group.dynamodb_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.fraud_checker.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
-}
-
 resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_fraud_checker" {
   security_group_id            = aws_security_group.sns_vpc_endpoint.id
   referenced_security_group_id = aws_security_group.fraud_checker.id
@@ -210,6 +196,22 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_endpoints" {
   ip_protocol                  = "tcp"
 }
 
+resource "aws_vpc_security_group_egress_rule" "backend_to_dynamodb_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  prefix_list_id    = data.aws_prefix_list.dynamodb.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_dynamodb_endpoint" {
+  security_group_id = aws_security_group.fraud_checker.id
+  prefix_list_id    = data.aws_prefix_list.dynamodb.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
 resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_endpoints" {
   security_group_id            = aws_security_group.fraud_checker.id
   referenced_security_group_id = aws_security_group.ssm_vpc_endpoint.id
@@ -221,14 +223,6 @@ resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_endpoints" {
 resource "aws_vpc_security_group_egress_rule" "lambda_to_sqs_endpoint" {
   security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.sqs_vpc_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
-}
-
-resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_dynamodb_endpoint" {
-  security_group_id            = aws_security_group.fraud_checker.id
-  referenced_security_group_id = aws_security_group.dynamodb_vpc_endpoint.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
