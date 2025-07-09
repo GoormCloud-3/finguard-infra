@@ -69,7 +69,7 @@ resource "aws_security_group" "backend" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_proxy" {
+resource "aws_vpc_security_group_egress_rule" "backend_to_rds_proxy" {
   security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.rds_proxy.id
   from_port                    = 3306
@@ -77,7 +77,7 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_proxy" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "lambda_to_elasticache" {
+resource "aws_vpc_security_group_egress_rule" "backend_to_elasticache" {
   security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.elasticache.id
   from_port                    = 6379
@@ -85,7 +85,7 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_elasticache" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "lambda_to_endpoints" {
+resource "aws_vpc_security_group_egress_rule" "backend_to_endpoints" {
   security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.ssm_vpc_endpoint.id
   from_port                    = 443
@@ -101,7 +101,7 @@ resource "aws_vpc_security_group_egress_rule" "backend_to_dynamodb_endpoint" {
   ip_protocol       = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "lambda_to_sqs_endpoint" {
+resource "aws_vpc_security_group_egress_rule" "backend_to_sqs_endpoint" {
   security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.sqs_vpc_endpoint.id
   from_port                    = 443
@@ -128,7 +128,7 @@ resource "aws_security_group" "ssm_vpc_endpoint" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_backend" {
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
   referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
@@ -146,11 +146,11 @@ resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_fraud_checker"
 
 resource "aws_security_group" "kms_vpc_endpoint" {
   name        = "${var.project_name}-${var.env}-kms-vpc-endpoint"
-  description = "Allow Lambda to access kms via VPC endpoint"
+  description = "Allow backend to access kms via VPC endpoint"
   vpc_id      = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "kms_endpoint_from_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "kms_endpoint_from_backend" {
   security_group_id            = aws_security_group.kms_vpc_endpoint.id
   referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
@@ -176,7 +176,7 @@ resource "aws_security_group" "elasticache" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "elasticache_from_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "elasticache_from_backend" {
   security_group_id            = aws_security_group.elasticache.id
   referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 6379
@@ -189,7 +189,7 @@ resource "aws_security_group" "sqs_vpc_endpoint" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "sqs_endpoint_from_lambda" {
+resource "aws_vpc_security_group_ingress_rule" "sqs_endpoint_from_backend" {
   security_group_id            = aws_security_group.sqs_vpc_endpoint.id
   referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
@@ -210,7 +210,7 @@ resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_dynamodb_endpoin
   ip_protocol       = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_endpoints" {
+resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_ssm_endpoint" {
   security_group_id            = aws_security_group.fraud_checker.id
   referenced_security_group_id = aws_security_group.ssm_vpc_endpoint.id
   from_port                    = 443
