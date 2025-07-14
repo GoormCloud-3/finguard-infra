@@ -44,9 +44,14 @@ resource "aws_iam_role_policy_attachment" "api_lambda_to_send_msg_to_trade_queue
   policy_arn = aws_iam_policy.sqs_send_message.arn
 }
 
-resource "aws_iam_role_policy_attachment" "api_lambda_to_crud_noti_table" {
-  role       = aws_iam_role.fraud_detector.name
-  policy_arn = aws_iam_policy.dynamodb_alert_table_client.arn
+resource "aws_iam_role_policy_attachment" "api_lambda_to_write_xray" {
+  role       = aws_iam_role.lambda_rds_connection.name
+  policy_arn = data.aws_iam_policy.xray_write.arn
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_to_crud_notification_table" {
+  role       = aws_iam_role.lambda_rds_connection.name
+  policy_arn = aws_iam_policy.notification_table_crud.arn
 }
 # Fraud Check Lambda가 수행할 역할
 # 1. SQS로부터 큐 수신, 전송, 삭제
@@ -62,6 +67,11 @@ resource "aws_iam_role_policy_attachment" "fraud_detector_to_save_log" {
   policy_arn = aws_iam_policy.lambda_logs.arn
 }
 
+resource "aws_iam_role_policy_attachment" "fraud_detector_to_xray" {
+  role       = aws_iam_role.fraud_detector.name
+  policy_arn = data.aws_iam_policy.xray_write.arn
+}
+
 resource "aws_iam_role_policy_attachment" "fraud_detector_to_create_eni" {
   role       = aws_iam_role.fraud_detector.name
   policy_arn = aws_iam_policy.create_eni.arn
@@ -72,9 +82,9 @@ resource "aws_iam_role_policy_attachment" "fraud_detector_to_get_param" {
   policy_arn = aws_iam_policy.ssm_get_finguard_param.arn
 }
 
-resource "aws_iam_role_policy_attachment" "fraud_dynamodb_alert_table" {
+resource "aws_iam_role_policy_attachment" "fraud_detector_to_get_tokens_from_notification_table" {
   role       = aws_iam_role.fraud_detector.name
-  policy_arn = aws_iam_policy.dynamodb_alert_table_client.arn
+  policy_arn = aws_iam_policy.notification_table_select.arn
 }
 
 resource "aws_iam_role_policy_attachment" "fraud_detector_to_get_msg_from_trade_queue" {
@@ -87,8 +97,12 @@ resource "aws_iam_role_policy_attachment" "fraud_detector_to_send_msg_to_sns" {
   policy_arn = aws_iam_policy.sns_send.arn
 }
 
+resource "aws_iam_role_policy_attachment" "fraud_detector_to_invoe_sagemaker" {
+  role       = aws_iam_role.fraud_detector.name
+  policy_arn = aws_iam_policy.sagemaker_invoke_function.arn
+}
+
 # notification Trigger Lambda
-# DynamoDB의 Alert Table에 접근 가능한 역할
 resource "aws_iam_role" "notification_sender" {
   name               = "${var.project_name}-${var.env}-notification-sender"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
@@ -97,6 +111,16 @@ resource "aws_iam_role" "notification_sender" {
 resource "aws_iam_role_policy_attachment" "notification_sender_to_save_log" {
   role       = aws_iam_role.notification_sender.name
   policy_arn = aws_iam_policy.lambda_logs.arn
+}
+
+resource "aws_iam_role_policy_attachment" "notification_sender_to_write_xray" {
+  role       = aws_iam_role.notification_sender.name
+  policy_arn = data.aws_iam_policy.xray_write.arn
+}
+
+resource "aws_iam_role_policy_attachment" "notification_sender_to_receive_msg_from_sns" {
+  role       = aws_iam_role.notification_sender.name
+  policy_arn = aws_iam_policy.sns_receive.arn
 }
 
 # Sagemaker의 권한

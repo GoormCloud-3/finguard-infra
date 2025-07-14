@@ -49,3 +49,8 @@ variable "ml_bucket_arn" {
   description = "SageMaker가 사용할 버켓의 arn"
   type        = string
 }
+
+variable "sagemaker_endpoint_name" {
+  description = "SageMaker가 엔드포인트명"
+  type        = string
+}

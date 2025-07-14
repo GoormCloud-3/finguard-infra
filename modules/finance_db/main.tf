@@ -7,11 +7,12 @@ resource "aws_db_subnet_group" "mysql" {
 }
 
 resource "aws_db_instance" "mysql" {
-  identifier                          = "${var.project_name}-rds"
+  identifier                          = "${var.project_name}-${var.env}-rds"
+  snapshot_identifier                 = data.aws_db_snapshot.latest.id
   db_name                             = var.project_name
   engine                              = "mysql"
   engine_version                      = "8.0.36"
-  instance_class                      = "db.t4g.micro"
+  instance_class                      = var.instance_class
   allocated_storage                   = 20
   storage_type                        = "gp3"
   username                            = var.db_username
@@ -20,12 +21,20 @@ resource "aws_db_instance" "mysql" {
   vpc_security_group_ids              = [var.rds_sg_id]
   publicly_accessible                 = var.public_accessible
   multi_az                            = true
-  skip_final_snapshot                 = true
+  skip_final_snapshot                 = false
+  final_snapshot_identifier           = "final-${formatdate("YYYYMMDD-HHmmss", timestamp())}"
   apply_immediately                   = true
   deletion_protection                 = false
   iam_database_authentication_enabled = true
   tags = {
     Name = "${var.project_name}-rds"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      snapshot_identifier,
+      final_snapshot_identifier
+    ]
   }
 }
 

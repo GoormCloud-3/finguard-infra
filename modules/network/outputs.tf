@@ -69,11 +69,6 @@ output "fraud_checker_sg_id" {
   value       = aws_security_group.fraud_checker.id
 }
 
-output "dynamodb_vpc_endpoint_sg_id" {
-  description = "DynamoDB VPC Endpoint Security Group ID"
-  value       = aws_security_group.dynamodb_vpc_endpoint.id
-}
-
 output "sns_vpc_endpoint_sg_id" {
   description = "SNS VPC Endpoint Security Group ID"
   value       = aws_security_group.sns_vpc_endpoint.id

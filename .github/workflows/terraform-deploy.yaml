@@ -41,7 +41,12 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          terraform -chdir=${{ env.TF_DIR }} plan -no-color > plan.txt
+          terraform -chdir=${{ env.TF_DIR }} \
+            plan \
+            -out=tfplan.binary \
+            -no-color \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            | tee plan.txt
 
       - name: Upload Plan to S3 and Presign URL
         id: upload_plan
@@ -78,7 +83,9 @@ jobs:
       - name: Terraform Apply
         id: apply
         run: |
-          terraform -chdir=${{ env.TF_DIR }} apply -auto-approve -no-color > apply.txt
+          terraform -chdir=${{ env.TF_DIR }} \
+            apply -auto-approve tfplan.binary \
+            | tee apply.txt
 
       - name: Upload Apply to S3 and Presign URL
         id: upload_apply

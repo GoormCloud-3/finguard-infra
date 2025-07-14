@@ -41,7 +41,10 @@ jobs:
       - name: Terraform Destroy
         id: destroy
         run: |
-          terraform -chdir=${{ env.TF_DIR }} destroy -auto-approve -no-color > destroy.txt
+          terraform -chdir=${{ env.TF_DIR }} \
+            destroy -auto-approve -no-color \
+            -var="db_password=${{ secrets.DB_PASSWORD }}"
+            | tee destroy.txt
 
       - name: Upload Destroy Log to S3 and Presign URL
         id: upload_destroy

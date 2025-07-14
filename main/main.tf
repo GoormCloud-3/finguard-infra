@@ -1,4 +1,3 @@
-
 module "network" {
   source = "../modules/network"
 
@@ -30,7 +29,8 @@ module "iam" {
   alert_table_arn = module.notification_token_table.table_arn
 
   # SageMaker 버켓에 필요한 값
-  ml_bucket_arn = data.aws_s3_bucket.ml_model_bucket.arn
+  ml_bucket_arn           = data.aws_s3_bucket.ml_model_bucket.arn
+  sagemaker_endpoint_name = module.finance_fraud_trading_check_ml.sagemaker_endpoint_name
 }
 
 module "trading_sqs" {
@@ -43,12 +43,13 @@ module "trading_sqs" {
 module "trading_rds" {
   source = "../modules/finance_db"
 
+  instance_class    = "db.m6g.large"
   project_name      = local.project_name
   env               = local.env
   subnet_ids        = module.network.rds_subnet_ids
   rds_sg_id         = module.network.rds_sg_id
   db_username       = local.db_username
-  db_password       = data.aws_ssm_parameter.db_password.value
+  db_password       = var.db_password
   public_accessible = true
 }
 
