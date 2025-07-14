@@ -113,7 +113,12 @@ resource "aws_iam_role_policy_attachment" "notification_sender_to_save_log" {
   policy_arn = aws_iam_policy.lambda_logs.arn
 }
 
-resource "aws_iam_role_policy_attachment" "fraud_detector_to_receive_msg_from_sns" {
+resource "aws_iam_role_policy_attachment" "notification_sender_to_write_xray" {
+  role       = aws_iam_role.notification_sender.name
+  policy_arn = data.aws_iam_policy.xray_write.arn
+}
+
+resource "aws_iam_role_policy_attachment" "notification_sender_to_receive_msg_from_sns" {
   role       = aws_iam_role.notification_sender.name
   policy_arn = aws_iam_policy.sns_receive.arn
 }
