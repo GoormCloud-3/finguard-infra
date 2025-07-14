@@ -45,6 +45,7 @@ module "trading_rds" {
 
   project_name      = local.project_name
   env               = local.env
+  instance_class    = local.db_instance_class
   subnet_ids        = module.network.rds_subnet_ids
   rds_sg_id         = module.network.rds_sg_id
   db_username       = local.db_username

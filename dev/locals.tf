@@ -1,8 +1,9 @@
 locals {
-  project_name = "finguard"
-  env          = "dev"
-  region       = "ap-northeast-2"
-  db_username  = "admin"
+  project_name      = "finguard"
+  env               = "dev"
+  region            = "ap-northeast-2"
+  db_username       = "admin"
+  db_instance_class = "db.t4g.micro"
 
   # 기본 VPC CIDR
   main_vpc_cidr_block = "10.0.0.0/16"

@@ -14,6 +14,11 @@ variable "env" {
   }
 }
 
+variable "instance_class" {
+  description = "RDS가 사용할 인스턴스 타입"
+  type        = string
+}
+
 variable "subnet_ids" {
   description = "RDS가 속할 서브넷의 아이디들"
   type        = list(string)
