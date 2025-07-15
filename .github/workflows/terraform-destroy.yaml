@@ -43,7 +43,7 @@ jobs:
         run: |
           terraform -chdir=${{ env.TF_DIR }} \
             destroy -auto-approve -no-color \
-            -var="db_password=${{ secrets.DB_PASSWORD }}"
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
             | tee destroy.txt
 
       - name: Upload Destroy Log to S3 and Presign URL
@@ -53,14 +53,14 @@ jobs:
           TS="$(date +%Y%m%d-%H%M%S)"
           ENV="${{ github.event.inputs.environment }}"
           FILE_NAME="${REPO}-destroy-${TS}-${ENV}.txt"
-          
+
           aws s3api put-object \
             --bucket "${{ secrets.S3_PLAN_BUCKET }}" \
             --key "$FILE_NAME" \
             --body destroy.txt
 
           PRESIGNED_URL=$(aws s3 presign "s3://${{ secrets.S3_PLAN_BUCKET }}/$FILE_NAME" --expires-in 3600)
-          
+
           # 출력 정리
           echo "$PRESIGNED_URL" > destroy_url.txt
           echo "url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
