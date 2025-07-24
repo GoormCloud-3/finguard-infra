@@ -29,7 +29,7 @@ module "iam" {
   alert_table_arn = module.notification_token_table.table_arn
 
   # SageMaker 버켓에 필요한 값
-  ml_bucket_arn           = data.aws_s3_bucket.ml_model_bucket.arn
+  ml_bucket_arn           = aws_s3_bucket.fraud_model.arn
   sagemaker_endpoint_name = module.finance_fraud_trading_check_ml.sagemaker_endpoint_name
 }
 
@@ -89,7 +89,7 @@ module "finance_fraud_trading_check_ml" {
   project_name                 = local.project_name
   env                          = local.env
   sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
-  bucket_name                  = aws_s3_bucket.fraud_model.name
+  bucket_name                  = aws_s3_bucket.fraud_model.bucket_domain_name
 }
 
 resource "aws_apigatewayv2_api" "api_lambda" {
