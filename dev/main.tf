@@ -7,7 +7,6 @@ module "network" {
   public_subnets      = local.public_subnets
   rds_subnets         = local.rds_subnets
   lambda_subnets      = local.lambda_subnets
-  elasticache_subnets = local.elasticache_subnets
   endpoint_subnets    = local.endpoint_subnets
 }
 
@@ -29,7 +28,7 @@ module "iam" {
   alert_table_arn = module.notification_token_table.table_arn
 
   # SageMaker 버켓에 필요한 값
-  ml_bucket_arn           = data.aws_s3_bucket.ml_model_bucket.arn
+  ml_bucket_arn           = data.aws_s3_bucket.selected.arn
   sagemaker_endpoint_name = module.finance_fraud_trading_check_ml.sagemaker_endpoint_name
 }
 
@@ -72,22 +71,16 @@ module "notification_token_table" {
   env          = local.env
 }
 
-module "caching" {
-  source = "../modules/finance_caching"
-
-  project_name      = local.project_name
-  env               = local.env
-  security_group_id = module.network.elasticache_sg_id
-  subnet_ids        = module.network.elasticache_subnet_ids
-  node_type         = local.caching.node_type
-  num_cache_nodes   = local.caching.num_cache_nodes
-}
-
 module "finance_fraud_trading_check_ml" {
   source = "../modules/finance_ml"
 
   project_name                 = local.project_name
   env                          = local.env
   sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
-  bucket_name                  = data.aws_s3_bucket.ml_model_bucket.bucket
+  bucket_name                  = data.aws_s3_bucket.selected.id
+}
+
+resource "aws_apigatewayv2_api" "api_lambda" {
+  name          = "dev-FinGuard-Backend"
+  protocol_type = "HTTP"
 }

@@ -7,8 +7,8 @@ resource "aws_db_subnet_group" "mysql" {
 }
 
 resource "aws_db_instance" "mysql" {
-  identifier                          = "${var.project_name}-${var.env}-rds"
-  snapshot_identifier                 = data.aws_db_snapshot.latest.id
+  identifier = "${var.project_name}-${var.env}-rds"
+  # snapshot_identifier                 = data.aws_db_snapshot.latest.id
   db_name                             = var.project_name
   engine                              = "mysql"
   engine_version                      = "8.0.36"

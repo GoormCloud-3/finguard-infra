@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.7.0"
 
   backend "s3" {
-    bucket         = "finguard-infra-terraform"
+    bucket         = "finguard-infra"
     key            = "terraform/dev/terraform.tfstate"
     encrypt        = true
     dynamodb_table = "terraform-lock"

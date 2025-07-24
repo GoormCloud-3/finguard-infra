@@ -247,7 +247,7 @@ data "aws_iam_policy_document" "sagemaker_s3_access" {
 }
 
 data "aws_ecr_repository" "fraud_check" {
-  name = "finguard/fraud-check-ml"
+  name = "finguard/test-serving"
 }
 
 data "aws_iam_policy_document" "sagemaker_ecr_access_policy" {
