@@ -89,5 +89,18 @@ module "finance_fraud_trading_check_ml" {
   project_name                 = local.project_name
   env                          = local.env
   sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
-  bucket_name                  = data.aws_s3_bucket.ml_model_bucket.bucket
+  bucket_name                  = aws_s3_bucket.fraud_model.name
+}
+
+resource "aws_apigatewayv2_api" "api_lambda" {
+  name          = "dev-FinGuard-Backend"
+  protocol_type = "HTTP"
+}
+
+resource "aws_s3_bucket" "fraud_model" {
+  bucket = "finguard-fraud-model"
+}
+
+resource "aws_s3_bucket" "fraud_terraform_plan" {
+  bucket = "finguard-terraform-plan"
 }
