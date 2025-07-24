@@ -7,8 +7,8 @@ module "network" {
   public_subnets      = local.public_subnets
   rds_subnets         = local.rds_subnets
   lambda_subnets      = local.lambda_subnets
-  elasticache_subnets = local.elasticache_subnets
-  endpoint_subnets    = local.endpoint_subnets
+  # elasticache_subnets = local.elasticache_subnets
+  endpoint_subnets = local.endpoint_subnets
 }
 
 module "iam" {
@@ -72,16 +72,16 @@ module "notification_token_table" {
   env          = local.env
 }
 
-module "caching" {
-  source = "../modules/finance_caching"
-
-  project_name      = local.project_name
-  env               = local.env
-  security_group_id = module.network.elasticache_sg_id
-  subnet_ids        = module.network.elasticache_subnet_ids
-  node_type         = local.caching.node_type
-  num_cache_nodes   = local.caching.num_cache_nodes
-}
+#module "caching" {
+#  source = "../modules/finance_caching"
+#
+#  project_name      = local.project_name
+#  env               = local.env
+#  security_group_id = module.network.elasticache_sg_id
+#  subnet_ids        = module.network.elasticache_subnet_ids
+#  node_type         = local.caching.node_type
+#  num_cache_nodes   = local.caching.num_cache_nodes
+#}
 
 module "finance_fraud_trading_check_ml" {
   source = "../modules/finance_ml"
@@ -89,7 +89,7 @@ module "finance_fraud_trading_check_ml" {
   project_name                 = local.project_name
   env                          = local.env
   sagemaker_execution_role_arn = module.iam.sagemaker_execution_role_arn
-  bucket_name                  = "finguard-model-artifacts"
+  bucket_name                  = data.aws_s3_bucket.selected.arn
 }
 
 resource "aws_apigatewayv2_api" "api_lambda" {

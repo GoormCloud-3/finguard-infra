@@ -48,6 +48,7 @@ variable "elasticache_subnets" {
     az         = string
   }))
   description = "ElastiCache가 속할 서브넷들. key는 서브넷의 이름이 된다."
+  default     = {}
 }
 
 variable "endpoint_subnets" {
