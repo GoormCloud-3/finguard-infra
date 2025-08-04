@@ -51,16 +51,16 @@ locals {
     }
   }
 
-  elasticache_subnets = {
-    "${local.project_name}-${local.env}-elasticache-a" = {
-      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 0)
-      az         = "${local.region}a"
-    }
-    "${local.project_name}-${local.env}-elasticache-c" = {
-      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 1)
-      az         = "${local.region}c"
-    }
-  }
+  #elasticache_subnets = {
+  #  "${local.project_name}-${local.env}-elasticache-a" = {
+  #    cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 0)
+  #    az         = "${local.region}a"
+  #  }
+  #  "${local.project_name}-${local.env}-elasticache-c" = {
+  #    cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 1)
+  #    az         = "${local.region}c"
+  #  }
+  #}
 
   endpoint_subnets = {
     "${local.project_name}-${local.env}-vpc-endpoint-a" = {
@@ -73,8 +73,8 @@ locals {
     }
   }
 
-  caching = {
-    node_type       = "cache.t3.micro"
-    num_cache_nodes = 1
-  }
+  #caching = {
+  #  node_type       = "cache.t3.micro"
+  #  num_cache_nodes = 1
+  #}
 }
