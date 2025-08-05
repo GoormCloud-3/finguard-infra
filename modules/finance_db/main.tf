@@ -11,7 +11,7 @@ resource "aws_db_instance" "mysql" {
   # snapshot_identifier                 = data.aws_db_snapshot.latest.id
   db_name                             = var.project_name
   engine                              = "mysql"
-  engine_version                      = "8.0.36"
+  engine_version                      = "8.0.37"
   instance_class                      = var.instance_class
   allocated_storage                   = 20
   storage_type                        = "gp3"
