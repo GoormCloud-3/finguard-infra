@@ -58,7 +58,7 @@ resource "terraform_data" "force_delete_secret" {
       echo "Force deleting secret: ${self.input.secret_name}"
       aws secretsmanager delete-secret \
         --secret-id ${self.input.secret_name} \
-        --force-delete-without-recovery || true
+        --force-delete-without-recovery || trueter
     EOT
   }
 
@@ -87,4 +87,6 @@ resource "aws_ssm_parameter" "rds_username" {
   name  = "/${var.project_name}/${var.env}/finance/rds_db_username"
   type  = "String"
   value = var.db_username
+ 
+  overwrite = true 
 }
