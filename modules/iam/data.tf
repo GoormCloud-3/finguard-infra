@@ -95,7 +95,8 @@ data "aws_iam_policy_document" "sqs_send_message" {
     effect = "Allow"
     actions = [
       "sqs:SendMessage",
-      "sqs:GetQueueAttributes"
+      "sqs:GetQueueAttributes",
+      "sqs:ChangeMessageVisibility"
     ]
     resources = [var.trade_queue_arn]
   }
@@ -192,7 +193,8 @@ data "aws_iam_policy_document" "sns_send" {
     effect = "Allow"
 
     actions = [
-      "sns:Publish"
+      "sns:Publish",
+      "sns:GetTopicAttributes"
     ]
 
     resources = [
@@ -289,4 +291,34 @@ data "aws_iam_policy_document" "sagemaker_invoke_endpoint_policy" {
     ]
   }
 }
+
+
+#ecsTaskExecutionRole
+data "aws_iam_policy_document" "ecs_task_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+
+data "aws_iam_policy_document" "xRay" {
+  statement {
+    sid    = "AllowXRay"
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets",
+      "xray:GetSamplingStatisticSummaries",
+    ]
+    resources = ["*"]
+  }
+}
+
 

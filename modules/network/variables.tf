@@ -58,3 +58,22 @@ variable "endpoint_subnets" {
   }))
   description = "VPC Endpoint가 속할 서브넷들. key는 서브넷의 이름이 된다."
 }
+
+variable "alb_subnets" {
+  type = map(object({
+    cidr_block = string
+    az         = string
+  }))
+  description = "ALB가 속할 서브넷들. key는 서브넷의 이름이 된다."
+  
+}
+
+
+variable "ecs_subnets" {
+  type = map(object({
+    cidr_block = string
+    az         = string
+  }))
+  description = "ECS가 속할 서브넷들. key는 서브넷의 이름이 된다."
+  
+}

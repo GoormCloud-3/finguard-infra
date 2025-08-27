@@ -22,6 +22,22 @@ resource "aws_route_table" "private_with_s3" {
   }
 }
 
+resource "aws_route_table" "private_with_s3_and_dynamodb" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.project_name}-${var.env}-private-with-S3-And-Dynamodb"
+  }
+}
+
+resource "aws_route_table_association" "ecs" {
+  for_each = aws_subnet.ecs_subnets
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private_with_s3_and_dynamodb.id
+}
+
+
 resource "aws_route_table_association" "dynamodb" {
   for_each = aws_subnet.lambda_subnets
 
@@ -48,6 +64,15 @@ resource "aws_route_table_association" "public_subnet_with_public_route" {
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public_rt.id
 }
+
+resource "aws_route_table_association" "alb_subnet_with_public_route" {
+  for_each = aws_subnet.alb_subnets
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+
 
 
 # 개발 환경인 경우엔 Public Route Table을 RDS가 사용하도록

@@ -8,6 +8,9 @@ module "network" {
   rds_subnets         = local.rds_subnets
   lambda_subnets      = local.lambda_subnets
   endpoint_subnets    = local.endpoint_subnets
+  alb_subnets         = local.alb_subnets
+  ecs_subnets         = local.ecs_subnets
+  
 }
 
 module "iam" {

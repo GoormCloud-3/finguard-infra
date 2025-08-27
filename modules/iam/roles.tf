@@ -138,3 +138,81 @@ resource "aws_iam_role_policy_attachment" "sagemaker_attach_ecr_access" {
   role       = aws_iam_role.sagemaker_execution_role.name
   policy_arn = aws_iam_policy.sagemaker_ecr_access_policy.arn
 }
+
+
+
+# ecsTaskExecutionRole
+resource "aws_iam_role" "ecsTaskExecutionRole" {
+  name               = "ecsTaskExecutionRole"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_create_eni" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.create_eni.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_lambda_logs" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.lambda_logs.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_notification_table_crud" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.notification_table_crud.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_rds_proxy_connect" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.rds_proxy_connect.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_sagemaker_s3_access" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.sagemaker_s3_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_sagemaker_invoke_endpoint" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.sagemaker_invoke_endpoint_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_sns_send" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.sns_send.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_ssm_get_finguard_param" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.ssm_get_finguard_param.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_xRay" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.xRay.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_sqs_send_message" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.sqs_send_message.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_sqs_consumer" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = aws_iam_policy.sqs_consumer.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_to_amazon_ec2_container_registry_read_only" {
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+
+
+
+
+
+
+
+
+

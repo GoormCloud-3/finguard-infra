@@ -23,6 +23,20 @@ output "endpoint_subnet_ids" {
   value       = [for s in aws_subnet.endpoint_subnets : s.id]
 }
 
+output "alb_subnet_ids" {
+  description = "ALB 서브넷들의 ID"
+  value       = [for s in aws_subnet.alb_subnets : s.id]
+  
+}
+
+output "ecs_subnet_ids" {
+  description = "ECS 서브넷들의 ID"
+  value       = [for s in aws_subnet.ecs_subnets : s.id]
+  
+}
+
+
+
 # 보안그룹
 output "public_sg_id" {
   description = "Public Security Group ID"
@@ -73,3 +87,29 @@ output "sns_vpc_endpoint_sg_id" {
   description = "SNS VPC Endpoint Security Group ID"
   value       = aws_security_group.sns_vpc_endpoint.id
 }
+
+output "ecr_api_endpoint_sg_id" {
+  description = "ECR API VPC Endpoint Security Group ID"
+  value       = aws_security_group.ecr_api_endpoint.id
+}
+
+output "ecr_dkr_endpoint_sg_id" {
+  description = "ECR DKR VPC Endpoint Security Group ID"
+  value       = aws_security_group.ecr_dkr_endpoint.id
+}
+
+output "cloudwatch_logs_endpoint_sg_id" {
+  description = "CloudWatch Logs VPC Endpoint Security Group ID"
+  value       = aws_security_group.cloudwatch_logs_endpoint.id
+}
+
+output "sagemaker_runtime_endpoint_sg_id" {
+  description = "SageMaker Runtime VPC Endpoint Security Group ID"
+  value       = aws_security_group.sagemaker_runtime_endpoint.id
+}
+
+output "xray_endpoint_sg_id" {
+  description = "XRay VPC Endpoint Security Group ID"
+  value       = aws_security_group.xray_endpoint.id
+}
+

@@ -101,6 +101,15 @@ resource "aws_vpc_security_group_egress_rule" "backend_to_dynamodb_endpoint" {
   ip_protocol       = "tcp"
 }
 
+resource "aws_vpc_security_group_egress_rule" "backend_to_s3_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  prefix_list_id    = data.aws_prefix_list.s3.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  
+}
+
 resource "aws_vpc_security_group_egress_rule" "backend_to_sqs_endpoint" {
   security_group_id            = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.sqs_vpc_endpoint.id
@@ -108,6 +117,151 @@ resource "aws_vpc_security_group_egress_rule" "backend_to_sqs_endpoint" {
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
+
+resource "aws_vpc_security_group_egress_rule" "backend_to_sns_endpoint" {
+  security_group_id            = aws_security_group.backend.id
+  referenced_security_group_id = aws_security_group.sns_vpc_endpoint.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "backend_to_ecr_api_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id = aws_security_group.ecr_api_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "backend_to_ecr_dkr_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id = aws_security_group.ecr_dkr_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "backend_to_cloudwatch_logs_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id    =  aws_security_group.cloudwatch_logs_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "backend_to_sagemaker_runtime_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id    =  aws_security_group.sagemaker_runtime_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "backend_to_xray_endpoint" {
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id    =  aws_security_group.xray_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+
+resource "aws_security_group" "ecr_api_endpoint" {
+  name   = "${var.project_name}-${var.env}-ecr-api-endpoint"
+  vpc_id = aws_vpc.main.id
+}
+resource "aws_vpc_security_group_ingress_rule" "ecr_api_endpoint_from_backend" {
+  security_group_id            = aws_security_group.ecr_api_endpoint.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+
+resource "aws_security_group" "ecr_dkr_endpoint" {
+  name   = "${var.project_name}-${var.env}-ecr-dkr-endpoint"
+  vpc_id = aws_vpc.main.id
+}
+resource "aws_vpc_security_group_ingress_rule" "ecr_dkr_endpoint_from_backend" {
+  security_group_id            = aws_security_group.ecr_dkr_endpoint.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+
+resource "aws_security_group" "cloudwatch_logs_endpoint" {
+  name   = "${var.project_name}-${var.env}-cloudwatch-logs-endpoint"
+  vpc_id = aws_vpc.main.id
+}
+resource "aws_vpc_security_group_ingress_rule" "cloudwatch_logs_endpoint_from_backend" {
+  security_group_id            = aws_security_group.cloudwatch_logs_endpoint.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+
+resource "aws_security_group" "sagemaker_runtime_endpoint" {
+  name   = "${var.project_name}-${var.env}-sagemaker-runtime-endpoint"
+  vpc_id = aws_vpc.main.id
+}
+resource "aws_vpc_security_group_ingress_rule" "sagemaker_runtime_endpoint_from_backend" {
+  security_group_id            = aws_security_group.sagemaker_runtime_endpoint.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+
+resource "aws_security_group" "xray_endpoint" {
+  name   = "${var.project_name}-${var.env}-xray-endpoint"
+  vpc_id = aws_vpc.main.id
+}
+resource "aws_vpc_security_group_ingress_rule" "xray_endpoint_from_backend" {
+  security_group_id            = aws_security_group.xray_endpoint.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "backend_from_alb" {
+  security_group_id            = aws_security_group.backend.id
+  referenced_security_group_id = aws_security_group.alb_sg.id
+  from_port                    = 8000
+  to_port                      = 8000
+  ip_protocol                  = "tcp"
+}
+
+resource "aws_security_group" "alb_sg" {
+  name   = "${var.project_name}-${var.env}-alb-sg"
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "alb_from_anywhere" {
+  security_group_id            = aws_security_group.alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"  #  CIDR로 지정
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_to_backend" {
+  security_group_id = aws_security_group.alb_sg.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port         = 8000
+  to_port           = 8000
+  ip_protocol       = "tcp"
+}
+
+
+
 
 # sns
 resource "aws_security_group" "sns_vpc_endpoint" {
@@ -123,6 +277,16 @@ resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_fraud_checker"
   ip_protocol                  = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "sns_endpoint_from_backend" {
+  security_group_id            = aws_security_group.sns_vpc_endpoint.id
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+
+#ssm
 resource "aws_security_group" "ssm_vpc_endpoint" {
   name   = "${var.project_name}-${var.env}-ssm-vpc-endpoint"
   vpc_id = aws_vpc.main.id
@@ -233,6 +397,9 @@ resource "aws_vpc_security_group_egress_rule" "fraud_checker_to_ecr_endpoint" {
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
+
+
+
 
 # Sagemaker가 서버리스 엔드포인트를 사용하게 되면서 
 # 필요 없어짐.(서버리스 엔드포인트가 VPC 구성을 지원 안함)

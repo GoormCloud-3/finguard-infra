@@ -52,3 +52,26 @@ resource "aws_subnet" "endpoint_subnets" {
     Name = each.key
   }
 }
+
+resource "aws_subnet" "alb_subnets" {
+  for_each = var.alb_subnets
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.az
+  map_public_ip_on_launch = true   # 퍼블릭 IP 자동 할당
+  tags = {
+    Name = each.key
+  }
+}
+
+resource "aws_subnet" "ecs_subnets" {
+  for_each = var.ecs_subnets
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.az
+  tags = {
+    Name = each.key
+  }
+}
