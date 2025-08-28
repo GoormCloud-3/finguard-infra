@@ -167,14 +167,9 @@ resource "aws_iam_role_policy_attachment" "ecs_task_to_rds_proxy_connect" {
   policy_arn = aws_iam_policy.rds_proxy_connect.arn
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_to_sagemaker_s3_access" {
+resource "aws_iam_role_policy_attachment" "ecs_task_to_s3_and_sagemaker" {
   role       = aws_iam_role.ecsTaskExecutionRole.name
-  policy_arn = aws_iam_policy.sagemaker_s3_access.arn
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_to_sagemaker_invoke_endpoint" {
-  role       = aws_iam_role.ecsTaskExecutionRole.name
-  policy_arn = aws_iam_policy.sagemaker_invoke_endpoint_policy.arn
+  policy_arn = aws_iam_policy.s3_and_sagemaker.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_to_sns_send" {
@@ -192,14 +187,9 @@ resource "aws_iam_role_policy_attachment" "ecs_task_to_xRay" {
   policy_arn = aws_iam_policy.xRay.arn
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_to_sqs_send_message" {
+resource "aws_iam_role_policy_attachment" "ecs_task_to_sqs_send_and_receive" {
   role       = aws_iam_role.ecsTaskExecutionRole.name
-  policy_arn = aws_iam_policy.sqs_send_message.arn
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_to_sqs_consumer" {
-  role       = aws_iam_role.ecsTaskExecutionRole.name
-  policy_arn = aws_iam_policy.sqs_consumer.arn
+  policy_arn = aws_iam_policy.sqs_send_and_receive.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_to_amazon_ec2_container_registry_read_only" {
@@ -210,9 +200,86 @@ resource "aws_iam_role_policy_attachment" "ecs_task_to_amazon_ec2_container_regi
 
 
 
+#ecsDeployRole
+resource "aws_iam_role" "ecs_deploy_role" {
+  name               = "ecs-deploy-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_deploy_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecr_access" {
+  role       = aws_iam_role.ecs_deploy_role.name
+  policy_arn = aws_iam_policy.ecr_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecs_access" {
+  role       = aws_iam_role.ecs_deploy_role.name
+  policy_arn = aws_iam_policy.ecs_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecs_pass_role" {
+  role       = aws_iam_role.ecs_deploy_role.name
+  policy_arn = aws_iam_policy.ecs_pass_role.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_autoscaling" {
+  role       = aws_iam_role.ecs_deploy_role.name
+  policy_arn = aws_iam_policy.autoscaling.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_network_elb" {
+  role       = aws_iam_role.ecs_deploy_role.name
+  policy_arn = aws_iam_policy.network_elb.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_cloudwatch_logs" {
+  role       = aws_iam_role.ecs_deploy_role.name
+  policy_arn = aws_iam_policy.cloudwatch_logs.arn
+}
 
 
+#ecsDestroyRole
+resource "aws_iam_role" "ecs_destroy_role" {
+  name               = "ecs-destroy-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_destroy_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecs_service_ops" {
+  role       = aws_iam_role.ecs_destroy_role.name
+  policy_arn = aws_iam_policy.ecs_service_ops.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecs_taskdef_ops" {
+  role       = aws_iam_role.ecs_destroy_role.name
+  policy_arn = aws_iam_policy.ecs_taskdef_ops.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecr_delete" {
+  role       = aws_iam_role.ecs_destroy_role.name
+  policy_arn = aws_iam_policy.ecr_delete.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_ecs_cluster_delete" {
+  role       = aws_iam_role.ecs_destroy_role.name
+  policy_arn = aws_iam_policy.ecs_cluster_delete.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecsDeploy_to_cloudwatch_logs_delete" {
+  role       = aws_iam_role.ecs_destroy_role.name
+  policy_arn = aws_iam_policy.cloudwatch_logs_delete.arn
+}
 
 
-
-
+# aws backup role
+resource "aws_iam_role" "backup" {
+  name               = "${var.project_name}-${var.env}-backup-role"
+  assume_role_policy = data.aws_iam_policy_document.backup_assume.json
+}
+# 관리형 정책 2개 부착(백업/복구에 필요)
+resource "aws_iam_role_policy_attachment" "backup_role_attach_backup" {
+  role       = aws_iam_role.backup.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+}
+resource "aws_iam_role_policy_attachment" "backup_role_attach_restore" {
+  role       = aws_iam_role.backup.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
+}

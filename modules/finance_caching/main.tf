@@ -16,6 +16,7 @@ resource "aws_elasticache_cluster" "default" {
 
   tags = {
     Name = "${var.project_name}-${var.env}-account"
+    backup = "daily"
   }
 }
 

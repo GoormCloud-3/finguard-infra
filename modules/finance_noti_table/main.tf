@@ -7,6 +7,10 @@ resource "aws_dynamodb_table" "notification" {
     name = "user_id"
     type = "S"
   }
+
+  tags = { 
+    backup = "daily" 
+  }
 }
 
 resource "aws_ssm_parameter" "table_name" {

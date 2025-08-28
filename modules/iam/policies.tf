@@ -26,6 +26,11 @@ resource "aws_iam_policy" "ssm_get_finguard_param" {
   policy = data.aws_iam_policy_document.ssm_get_finguard_param.json
 }
 
+resource "aws_iam_policy" "sqs_send_and_receive" {
+  name   = "${var.project_name}-${var.env}-trade-queue-sendReceive-msg-policy"
+  policy = data.aws_iam_policy_document.sqs_send_and_receive.json
+}
+
 resource "aws_iam_policy" "sqs_send_message" {
   name   = "${var.project_name}-${var.env}-trade-queue-send-msg-policy"
   policy = data.aws_iam_policy_document.sqs_send_message.json
@@ -66,7 +71,82 @@ resource "aws_iam_policy" "sagemaker_ecr_access_policy" {
   policy = data.aws_iam_policy_document.sagemaker_ecr_access_policy.json
 }
 
+resource "aws_iam_policy" "s3_and_sagemaker" {
+  name   = "${var.project_name}-${var.env}-s3-and-sagemaker-ecr-fraud-image-access"
+  policy = data.aws_iam_policy_document.s3_and_sagemaker.json
+}
+
 resource "aws_iam_policy" "sagemaker_invoke_function" {
   name   = "${var.project_name}-${var.env}-sagemaker-invoke-function"
   policy = data.aws_iam_policy_document.sagemaker_invoke_endpoint_policy.json
 }
+
+resource "aws_iam_policy" "xRay" {
+  name   = "${var.project_name}-${var.env}-xray-policy"
+  policy = data.aws_iam_policy_document.xRay.json
+}
+
+
+#ecsDeployPolicies
+resource "aws_iam_policy" "ecr_access"{
+  name = "${var.project_name}-${var.env}-ecr-access-policy"
+  policy = data.aws_iam_policy_document.ecr_access.json
+}
+
+resource "aws_iam_policy" "ecs_access"{
+  name = "${var.project_name}-${var.env}-ecs-access-policy"
+  policy = data.aws_iam_policy_document.ecs_access.json
+}
+
+resource "aws_iam_policy" "ecs_pass_role"{
+  name = "${var.project_name}-${var.env}-ecs-pass-role-policy"
+  policy = data.aws_iam_policy_document.ecs_pass_role.json
+}
+
+resource "aws_iam_policy" "autoscaling"{
+  name = "${var.project_name}-${var.env}-autoscaling-policy"
+  policy = data.aws_iam_policy_document.autoscaling.json
+}
+
+resource "aws_iam_policy" "network_elb"{
+  name = "${var.project_name}-${var.env}-network-elb-policy"
+  policy = data.aws_iam_policy_document.network_elb.json
+}
+
+resource "aws_iam_policy" "cloudwatch_logs"{
+  name = "${var.project_name}-${var.env}-cloudwatch-logs-policy"
+  policy = data.aws_iam_policy_document.cloudwatch_logs.json
+}
+
+
+
+
+#ecsDestroyPolicies
+
+resource "aws_iam_policy" "ecs_service_ops"{
+  name = "${var.project_name}-${var.env}-ecs-service-ops"
+  policy = data.aws_iam_policy_document.ecs_service_ops.json
+}
+
+resource "aws_iam_policy" "ecs_taskdef_ops"{
+  name = "${var.project_name}-${var.env}-ecs-taskdef-ops"
+  policy = data.aws_iam_policy_document.ecs_taskdef_ops.json
+}
+
+resource "aws_iam_policy" "ecr_delete"{
+  name = "${var.project_name}-${var.env}-ecr-delete"
+  policy = data.aws_iam_policy_document.ecr_delete.json
+}
+
+resource "aws_iam_policy" "ecs_cluster_delete"{
+  name = "${var.project_name}-${var.env}-ecs-cluster-delete"
+  policy = data.aws_iam_policy_document.ecs_cluster_delete.json
+}
+
+resource "aws_iam_policy" "cloudwatch_logs_delete"{
+  name = "${var.project_name}-${var.env}-cloudwatch-logs-delete"
+  policy = data.aws_iam_policy_document.cloudwatch_logs_delete.json
+}
+
+
+

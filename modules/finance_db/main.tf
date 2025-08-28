@@ -28,14 +28,17 @@ resource "aws_db_instance" "mysql" {
   iam_database_authentication_enabled = true
   tags = {
     Name = "${var.project_name}-rds"
+    backup = "daily" 
   }
-
+  
   lifecycle {
     ignore_changes = [
       snapshot_identifier,
       final_snapshot_identifier
     ]
   }
+
+  
 }
 
 resource "aws_secretsmanager_secret" "rds_secret" {

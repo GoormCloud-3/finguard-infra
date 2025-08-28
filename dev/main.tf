@@ -10,7 +10,7 @@ module "network" {
   endpoint_subnets    = local.endpoint_subnets
   alb_subnets         = local.alb_subnets
   ecs_subnets         = local.ecs_subnets
-  
+
 }
 
 module "iam" {
@@ -83,7 +83,24 @@ module "finance_fraud_trading_check_ml" {
   bucket_name                  = data.aws_s3_bucket.selected.id
 }
 
+module "backup" {
+  source       = "../modules/backup"
+  project_name = local.project_name
+  env          = local.env
+  region       = local.region
+  iam_role_arn = module.iam.backup_role_arn
+
+  # 옵션: S3도 백업에 포함하려면(태그 못 달면) ARN을 명시
+  # data "aws_s3_bucket" "selected" 가 이미 있다면:
+  # resource_arns = [
+  #   "arn:aws:s3:::${data.aws_s3_bucket.selected.id}"
+  # ]
+}
+
+
 resource "aws_apigatewayv2_api" "api_lambda" {
   name          = "dev-FinGuard-Backend"
   protocol_type = "HTTP"
 }
+
+

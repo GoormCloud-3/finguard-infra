@@ -75,7 +75,7 @@ resource "aws_vpc_endpoint" "cloudwatch" {
   service_name        = "com.amazonaws.ap-northeast-2.logs"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [for s in aws_subnet.endpoint_subnets : s.id]
-  security_group_ids  = [aws_security_group.cloudwatch_vpc_endpoint.id]
+  security_group_ids  = [aws_security_group.cloudwatch_logs_endpoint.id]
   private_dns_enabled = true
   tags = {
     Name = "${var.project_name}-${var.env}-cloudwatch"
@@ -84,7 +84,7 @@ resource "aws_vpc_endpoint" "cloudwatch" {
 
 resource "aws_vpc_endpoint" "sagemaker_runtime" {
   vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.ap-northeast-2.sagemaker-runtime"
+  service_name        = "com.amazonaws.ap-northeast-2.sagemaker.runtime"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [for s in aws_subnet.endpoint_subnets : s.id]
   security_group_ids  = [aws_security_group.sagemaker_runtime_endpoint.id]
@@ -112,7 +112,8 @@ resource "aws_vpc_endpoint" "s3" {
   service_name      = "com.amazonaws.ap-northeast-2.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids = [
-    aws_route_table.private_with_s3.id
+    aws_route_table.private_with_s3.id,
+    aws_route_table.private_with_s3_and_dynamodb.id
   ]
 
   tags = {
@@ -125,7 +126,8 @@ resource "aws_vpc_endpoint" "dynamodb" {
   service_name      = "com.amazonaws.ap-northeast-2.dynamodb"
   vpc_endpoint_type = "Gateway"
   route_table_ids = [
-    aws_route_table.private_with_dynamodb.id
+    aws_route_table.private_with_dynamodb.id,
+    aws_route_table.private_with_s3_and_dynamodb.id
   ]
   tags = {
     Name = "${var.project_name}-${var.env}-dynamodb"
