@@ -1,7 +1,7 @@
 # locals { … } 블록은 “재사용할 값들을 이름 붙여 저장”하는 기능
 locals {
   project_name      = "finguard" # 모든 리소스 이름 prefix로 사용 (ex: finguard-dev-xxx).
-  env               = "dev" #환경 식별자. (dev, main, staging 등 구분)
+  env               = "dev"      #환경 식별자. (dev, main, staging 등 구분)
   region            = "ap-northeast-2"
   db_username       = "admin" #RDS 접속 기본 계정명.
   db_instance_class = "db.t4g.micro"
@@ -54,16 +54,16 @@ locals {
     }
   }
 
-#  elasticache_subnets = {
-#    "${local.project_name}-${local.env}-elasticache-a" = {
-#      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 0)
-#      az         = "${local.region}a"
-#    }
-#    "${local.project_name}-${local.env}-elasticache-c" = {
-#      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 1)
-#      az         = "${local.region}c"
-#    }
-#  }
+  #  elasticache_subnets = {
+  #    "${local.project_name}-${local.env}-elasticache-a" = {
+  #      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 0)
+  #      az         = "${local.region}a"
+  #    }
+  #    "${local.project_name}-${local.env}-elasticache-c" = {
+  #      cidr_block = cidrsubnet(local.main_vpc_cidr_block, 8, local.subnet_base_indexes.elasticache + 1)
+  #      az         = "${local.region}c"
+  #    }
+  #  }
 
   endpoint_subnets = {
     "${local.project_name}-${local.env}-vpc-endpoint-a" = {
@@ -76,10 +76,10 @@ locals {
     }
   }
 
-#  caching = {
-#    node_type       = "cache.t3.micro"
-#    num_cache_nodes = 1
-#  }
+  #  caching = {
+  #    node_type       = "cache.t3.micro"
+  #    num_cache_nodes = 1
+  #  }
 
   alb_subnets = {
     "${local.project_name}-${local.env}-alb-a" = {
@@ -105,3 +105,17 @@ locals {
 
 
 }
+
+
+# locals {
+#   ecs_subnets = {
+#     "finguard-dev-ecs-a" = {
+#       cidr_block = "10.0.0.0/24"
+#       az         = "ap-northeast-2a"
+#     }
+#     "finguard-dev-ecs-c" = {
+#       cidr_block = "10.0.3.0/24"
+#       az         = "ap-northeast-2c"
+#     }
+#   }
+# }

@@ -198,6 +198,49 @@ resource "aws_iam_role_policy_attachment" "ecs_task_to_amazon_ec2_container_regi
 }
 
 
+# 역할 추가: 콘솔 인라인 정책에서 '특정 리소스'에 필요한 최소치만 보강
+#  - CloudWatch Logs: /ecs/finguard-fcm-task 로그 그룹 쓰기
+#  - SSM: prod/firebase-service-account-json 파라미터 읽기
+
+
+data "aws_iam_policy_document" "ecs_task_inline_logs_and_ssm" {
+  statement {
+    sid     = "LogsWriteFcmTask"
+    effect  = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents",
+    ]
+
+    resources = [
+      "arn:aws:logs:ap-northeast-2:381492026475:log-group:/ecs/finguard-fcm-task",
+      "arn:aws:logs:ap-northeast-2:381492026475:log-group:/ecs/finguard-fcm-task:*",
+    ]
+  }
+
+  statement {
+    sid     = "SsmGetFirebaseParam"
+    effect  = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+    ]
+
+    resources = [
+      "arn:aws:ssm:ap-northeast-2:381492026475:parameter/prod/firebase-service-account-json",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "ecs_task_inline_logs_and_ssm" {
+  name   = "ecsTaskExecutionRole-inline-logs-and-ssm"
+  role   = aws_iam_role.ecsTaskExecutionRole.id
+  policy = data.aws_iam_policy_document.ecs_task_inline_logs_and_ssm.json
+}
+
+
 
 
 #ecsDeployRole

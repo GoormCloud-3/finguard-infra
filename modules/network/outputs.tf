@@ -26,13 +26,13 @@ output "endpoint_subnet_ids" {
 output "alb_subnet_ids" {
   description = "ALB 서브넷들의 ID"
   value       = [for s in aws_subnet.alb_subnets : s.id]
-  
+
 }
 
 output "ecs_subnet_ids" {
   description = "ECS 서브넷들의 ID"
   value       = [for s in aws_subnet.ecs_subnets : s.id]
-  
+
 }
 
 

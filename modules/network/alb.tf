@@ -3,8 +3,8 @@ resource "aws_lb" "alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-#   subnets            = [for subnet in aws_subnet.alb_subnets : subnet.id]
-  subnets            = values(aws_subnet.alb_subnets)[*].id
+  #   subnets            = [for subnet in aws_subnet.alb_subnets : subnet.id]
+  subnets                    = values(aws_subnet.alb_subnets)[*].id
   enable_deletion_protection = false
   idle_timeout               = 60
 
@@ -14,10 +14,10 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "account" {
-  name     = "${var.project_name}-${var.env}-account-tg"
-  port     = 8000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  name        = "${var.project_name}-${var.env}-account-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
@@ -36,10 +36,10 @@ resource "aws_lb_target_group" "account" {
 }
 
 resource "aws_lb_target_group" "transaction" {
-  name     = "${var.project_name}-${var.env}-transaction-tg"
-  port     = 8000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  name        = "${var.project_name}-${var.env}-transaction-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
@@ -58,10 +58,10 @@ resource "aws_lb_target_group" "transaction" {
 }
 
 resource "aws_lb_target_group" "user" {
-  name     = "${var.project_name}-${var.env}-user-tg"
-  port     = 8000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  name        = "${var.project_name}-${var.env}-user-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
@@ -86,7 +86,7 @@ resource "aws_lb_listener" "http_80" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "fixed-response"
+    type = "fixed-response"
     fixed_response {
       content_type = "text/plain"
       message_body = "Not Found"
