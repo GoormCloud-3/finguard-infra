@@ -70,7 +70,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   subnet_ids        = [for s in aws_subnet.endpoint_subnets : s.id]
   // 새로 만들어진 vpce 보안그룹 추가
   security_group_ids = [
-    aws_security_group.ecr_api_endpoint.id,
+    aws_security_group.ecr_dkr_endpoint.id,
     aws_security_group.vpce_common.id,
   ]
   private_dns_enabled = true
@@ -78,6 +78,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
     Name = "${var.project_name}-${var.env}-ecr-dkr"
   }
 }
+
 
 resource "aws_vpc_endpoint" "cloudwatch" {
   vpc_id              = aws_vpc.main.id
