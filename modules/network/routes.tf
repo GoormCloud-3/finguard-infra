@@ -31,9 +31,9 @@ resource "aws_route_table" "private_with_s3_and_dynamodb" {
 }
 
 resource "aws_route_table_association" "ecs" {
-  for_each = aws_subnet.ecs_subnets
-
-  subnet_id      = each.value.id
+  # for_each = aws_subnet.ecs_subnets // 리소스 자체를 키 소스로
+  for_each      = var.ecs_subnets  // 키는 변수에서, 값에서만 리소스 참조
+  subnet_id      = aws_subnet.ecs_subnets[each.key].id   # ← 리소스에서 id 참조
   route_table_id = aws_route_table.private_with_s3_and_dynamodb.id
 }
 
@@ -41,7 +41,7 @@ resource "aws_route_table_association" "ecs" {
 resource "aws_route_table_association" "dynamodb" {
   for_each = aws_subnet.lambda_subnets
 
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.lambda_subnets[each.key].id
   route_table_id = aws_route_table.private_with_dynamodb.id
 }
 
@@ -61,14 +61,14 @@ resource "aws_route" "public_igw_route" {
 resource "aws_route_table_association" "public_subnet_with_public_route" {
   for_each = aws_subnet.public_subnets
 
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.public_subnets[each.key].id
   route_table_id = aws_route_table.public_rt.id
 }
 
 resource "aws_route_table_association" "alb_subnet_with_public_route" {
   for_each = aws_subnet.alb_subnets
 
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.alb_subnets[each.key].id
   route_table_id = aws_route_table.public_rt.id
 }
 
@@ -79,7 +79,7 @@ resource "aws_route_table_association" "alb_subnet_with_public_route" {
 resource "aws_route_table_association" "dev_rds_subnet_with_public_route" {
   for_each = var.env == "dev" ? aws_subnet.rds_subnets : {}
 
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.rds_subnets[each.key].id
   route_table_id = aws_route_table.public_rt.id
 }
 

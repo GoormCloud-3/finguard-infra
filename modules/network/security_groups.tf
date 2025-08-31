@@ -1,3 +1,12 @@
+// 보안그룹 여러개 적용해야 할 시 사용할 부분
+locals {
+  cw_logs_allowed_sgs = {
+    backend      = aws_security_group.backend.id
+    ecs_b_worker = aws_security_group.ecs_b_worker.id
+  }
+}
+
+
 resource "aws_security_group" "allow_all" {
   name        = "${var.project_name}-${var.env}-public"
   description = "Allow all inbound and outbound traffic"
@@ -199,6 +208,13 @@ resource "aws_security_group" "vpce_common" {
   name   = "${var.project_name}-${var.env}-vpce-sg"
   vpc_id = aws_vpc.main.id
   tags   = { Name = "${var.project_name}-${var.env}-vpce-sg" }
+// 아웃바운드 규칙 추가
+   egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 // ecr api/dkr에 추가로 적용할 보안그룹의 인바운드 규칙
@@ -246,8 +262,9 @@ resource "aws_security_group" "cloudwatch_logs_endpoint" {
   vpc_id = aws_vpc.main.id
 }
 resource "aws_vpc_security_group_ingress_rule" "cloudwatch_logs_endpoint_from_backend" {
+  for_each                     = local.cw_logs_allowed_sgs
   security_group_id            = aws_security_group.cloudwatch_logs_endpoint.id
-  referenced_security_group_id = aws_security_group.backend.id
+  referenced_security_group_id = each.value // 인바운드 보안그룹 추가
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -341,9 +358,9 @@ resource "aws_security_group" "ssm_vpc_endpoint" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_backend" {
+  for_each                     = local.cw_logs_allowed_sgs
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
-  referenced_security_group_id = aws_security_group.backend.id
-  from_port                    = 443
+  referenced_security_group_id = each.value
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
