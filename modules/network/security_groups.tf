@@ -1,12 +1,3 @@
-// 보안그룹 여러개 적용해야 할 시 사용할 부분
-locals {
-  cw_logs_allowed_sgs = {
-    backend      = aws_security_group.backend.id
-    ecs_b_worker = aws_security_group.ecs_b_worker.id
-  }
-}
-
-
 resource "aws_security_group" "allow_all" {
   name        = "${var.project_name}-${var.env}-public"
   description = "Allow all inbound and outbound traffic"
@@ -116,7 +107,7 @@ resource "aws_vpc_security_group_egress_rule" "backend_to_s3_endpoint" {
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
-
+  
 }
 
 resource "aws_vpc_security_group_egress_rule" "backend_to_sqs_endpoint" {
@@ -136,43 +127,43 @@ resource "aws_vpc_security_group_egress_rule" "backend_to_sns_endpoint" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "backend_to_ecr_api_endpoint" {
-  security_group_id            = aws_security_group.backend.id
+  security_group_id = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.ecr_api_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "backend_to_ecr_dkr_endpoint" {
-  security_group_id            = aws_security_group.backend.id
+  security_group_id = aws_security_group.backend.id
   referenced_security_group_id = aws_security_group.ecr_dkr_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "backend_to_cloudwatch_logs_endpoint" {
-  security_group_id            = aws_security_group.backend.id
-  referenced_security_group_id = aws_security_group.cloudwatch_logs_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id    =  aws_security_group.cloudwatch_logs_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "backend_to_sagemaker_runtime_endpoint" {
-  security_group_id            = aws_security_group.backend.id
-  referenced_security_group_id = aws_security_group.sagemaker_runtime_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id    =  aws_security_group.sagemaker_runtime_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "backend_to_xray_endpoint" {
-  security_group_id            = aws_security_group.backend.id
-  referenced_security_group_id = aws_security_group.xray_endpoint.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
+  security_group_id = aws_security_group.backend.id
+  referenced_security_group_id    =  aws_security_group.xray_endpoint.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
 }
 
 
@@ -202,69 +193,13 @@ resource "aws_vpc_security_group_ingress_rule" "ecr_dkr_endpoint_from_backend" {
 }
 
 
-// ecr api/dkr에 추가로 적용할 보안그룹
-
-resource "aws_security_group" "vpce_common" {
-  name   = "${var.project_name}-${var.env}-vpce-sg"
-  vpc_id = aws_vpc.main.id
-  tags   = { Name = "${var.project_name}-${var.env}-vpce-sg" }
-// 아웃바운드 규칙 추가
-   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-// ecr api/dkr에 추가로 적용할 보안그룹의 인바운드 규칙
-
-# new-vpce-sg 인바운드 443: backend → VPCE
-resource "aws_vpc_security_group_ingress_rule" "vpce_from_backend" {
-  security_group_id            = aws_security_group.vpce_common.id
-  referenced_security_group_id = aws_security_group.backend.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
-  description                  = "Allow 443 from backend to VPCE"
-}
-
-# new-vpce-sg 인바운드 443: ECS 워커 → VPCE
-resource "aws_vpc_security_group_ingress_rule" "vpce_from_ecs_worker" {
-  security_group_id            = aws_security_group.vpce_common.id
-  referenced_security_group_id = aws_security_group.ecs_b_worker.id
-  from_port                    = 443
-  to_port                      = 443
-  ip_protocol                  = "tcp"
-  description                  = "Allow 443 from ECS worker to VPCE"
-}
-
-// ecs worker용 보안그룹 추가
-
-resource "aws_security_group" "ecs_b_worker" {
-  name        = "${var.project_name}-${var.env}-ecs-b-worker-sg"
-  description = "ECS B worker tasks (egress 443 only)"
-  vpc_id      = aws_vpc.main.id
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "${var.project_name}-${var.env}-ecs-b-worker-sg" }
-}
-
-
 resource "aws_security_group" "cloudwatch_logs_endpoint" {
   name   = "${var.project_name}-${var.env}-cloudwatch-logs-endpoint"
   vpc_id = aws_vpc.main.id
 }
 resource "aws_vpc_security_group_ingress_rule" "cloudwatch_logs_endpoint_from_backend" {
-  for_each                     = local.cw_logs_allowed_sgs
   security_group_id            = aws_security_group.cloudwatch_logs_endpoint.id
-  referenced_security_group_id = each.value // 인바운드 보안그룹 추가
+  referenced_security_group_id = aws_security_group.backend.id
   from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
@@ -310,19 +245,19 @@ resource "aws_security_group" "alb_sg" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "alb_from_anywhere" {
-  security_group_id = aws_security_group.alb_sg.id
-  cidr_ipv4         = "0.0.0.0/0" #  CIDR로 지정
+  security_group_id            = aws_security_group.alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"  #  CIDR로 지정
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "alb_to_backend" {
-  security_group_id            = aws_security_group.alb_sg.id
+  security_group_id = aws_security_group.alb_sg.id
   referenced_security_group_id = aws_security_group.backend.id
-  from_port                    = 8000
-  to_port                      = 8000
-  ip_protocol                  = "tcp"
+  from_port         = 8000
+  to_port           = 8000
+  ip_protocol       = "tcp"
 }
 
 
@@ -358,9 +293,9 @@ resource "aws_security_group" "ssm_vpc_endpoint" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_backend" {
-  for_each                     = local.cw_logs_allowed_sgs
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
-  referenced_security_group_id = each.value
+  referenced_security_group_id = aws_security_group.backend.id
+  from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }
@@ -472,6 +407,3 @@ resource "aws_security_group" "ml_server" {
   name   = "${var.project_name}-${var.env}-ml-server"
   vpc_id = aws_vpc.main.id
 }
-
-
-
