@@ -11,6 +11,8 @@ module "network" {
   alb_subnets         = local.alb_subnets
   ecs_subnets         = local.ecs_subnets
 
+
+
 }
 
 module "iam" {

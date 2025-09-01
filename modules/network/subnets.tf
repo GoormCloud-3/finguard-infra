@@ -9,12 +9,24 @@ resource "aws_subnet" "public_subnets" {
   }
 }
 
-resource "aws_subnet" "rds_subnets" {
-  for_each = var.rds_subnets
+# resource "aws_subnet" "rds_subnets" {
+#   for_each = var.rds_subnets
 
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = each.value.cidr_block
-  availability_zone = each.value.az
+#   vpc_id            = aws_vpc.main.id
+#   cidr_block        = each.value.cidr_block
+#   availability_zone = each.value.az
+#   tags = {
+#     Name = each.key
+#   }
+# }
+
+// 임시 생성
+
+resource "aws_subnet" "rds_subnets" {
+  for_each         = local.use_existing_rds ? {} : var.rds_subnets
+  vpc_id           = aws_vpc.main.id
+  cidr_block       = each.value.cidr_block
+  availability_zone= each.value.az
   tags = {
     Name = each.key
   }

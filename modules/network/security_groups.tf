@@ -361,6 +361,7 @@ resource "aws_vpc_security_group_ingress_rule" "ssm_endpoint_from_backend" {
   for_each                     = local.cw_logs_allowed_sgs
   security_group_id            = aws_security_group.ssm_vpc_endpoint.id
   referenced_security_group_id = each.value
+  from_port                    = 443
   to_port                      = 443
   ip_protocol                  = "tcp"
 }

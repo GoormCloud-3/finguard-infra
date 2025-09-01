@@ -1,4 +1,4 @@
-resource "aws_route_table" "private" {
+﻿resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
@@ -31,15 +31,15 @@ resource "aws_route_table" "private_with_s3_and_dynamodb" {
 }
 
 resource "aws_route_table_association" "ecs" {
-  # for_each = aws_subnet.ecs_subnets // 리소스 자체를 키 소스로
-  for_each      = var.ecs_subnets  // 키는 변수에서, 값에서만 리소스 참조
-  subnet_id      = aws_subnet.ecs_subnets[each.key].id   # ← 리소스에서 id 참조
+  # for_each = aws_subnet.ecs_subnets /
+  for_each      = var.ecs_subnets  
+  subnet_id      = aws_subnet.ecs_subnets[each.key].id   
   route_table_id = aws_route_table.private_with_s3_and_dynamodb.id
 }
 
 
 resource "aws_route_table_association" "dynamodb" {
-  for_each = aws_subnet.lambda_subnets
+  for_each = var.lambda_subnets 
 
   subnet_id      = aws_subnet.lambda_subnets[each.key].id
   route_table_id = aws_route_table.private_with_dynamodb.id
@@ -59,14 +59,14 @@ resource "aws_route" "public_igw_route" {
 }
 
 resource "aws_route_table_association" "public_subnet_with_public_route" {
-  for_each = aws_subnet.public_subnets
+  for_each = var.public_subnets
 
   subnet_id      = aws_subnet.public_subnets[each.key].id
   route_table_id = aws_route_table.public_rt.id
 }
 
 resource "aws_route_table_association" "alb_subnet_with_public_route" {
-  for_each = aws_subnet.alb_subnets
+  for_each = var.alb_subnets
 
   subnet_id      = aws_subnet.alb_subnets[each.key].id
   route_table_id = aws_route_table.public_rt.id
@@ -75,34 +75,33 @@ resource "aws_route_table_association" "alb_subnet_with_public_route" {
 
 
 
-# 개발 환경인 경우엔 Public Route Table을 RDS가 사용하도록
+# 
 resource "aws_route_table_association" "dev_rds_subnet_with_public_route" {
-  for_each = var.env == "dev" ? aws_subnet.rds_subnets : {}
-
-  subnet_id      = aws_subnet.rds_subnets[each.key].id
+   for_each       = var.env == "dev" ? var.rds_subnets : {}
+ subnet_id      = aws_subnet.rds_subnets[each.key].id
   route_table_id = aws_route_table.public_rt.id
 }
 
 
-// 일단 최소 변경사항 적용.
+// 
 
 resource "aws_route" "ecs_default_to_nat" {
   route_table_id         = aws_route_table.private_with_s3_and_dynamodb.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.nat["ap-northeast-2a"].id
-  # 필요하면 위 키를 "ap-northeast-2c"로 바꿔서 c AZ NAT를 타게 할 수 있음
+  # 
 }
 
 
 
-// 아래는 az별로 ecs용 라우팅 테이블 생성하는 코드
 
-# # ECS 서브넷이 실제로 배치된 AZ 집합
+
+#
 # locals {
 #   ecs_azs = toset([for s in aws_subnet.ecs_subnets : s.availability_zone])
 # }
 
-# # AZ별 ECS 전용 RT
+# # AZ蹂?ECS ?꾩슜 RT
 # resource "aws_route_table" "ecs_private" {
 #   for_each = local.ecs_azs
 #   vpc_id   = aws_vpc.main.id
@@ -111,7 +110,7 @@ resource "aws_route" "ecs_default_to_nat" {
 #   }
 # }
 
-# # 각 RT의 기본 경로(/0)를 같은 AZ의 NAT로
+# # 媛?RT??湲곕낯 寃쎈줈(/0)瑜?媛숈? AZ??NAT濡?
 # resource "aws_route" "ecs_default" {
 #   for_each               = local.ecs_azs
 #   route_table_id         = aws_route_table.ecs_private[each.key].id

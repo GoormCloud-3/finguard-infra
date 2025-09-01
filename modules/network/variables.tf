@@ -34,6 +34,24 @@ variable "rds_subnets" {
   description = "RDS가 속할 서브넷들. key는 서브넷의 이름이 된다."
 }
 
+
+locals {
+  use_existing_rds = length(var.existing_rds_subnet_ids_map) > 0
+
+  # 키는 "입력 변수의 키"로 고정, 값만 동적으로 결정
+  rds_subnet_ids_by_key = local.use_existing_rds ? var.existing_rds_subnet_ids_map: { for k, s in aws_subnet.rds_subnets : k => s.id }
+}
+
+
+// 임시로 생성
+variable "existing_rds_subnet_ids_map" {
+  type    = map(string)
+  default = {} 
+}
+
+
+
+
 variable "lambda_subnets" {
   type = map(object({
     cidr_block = string
