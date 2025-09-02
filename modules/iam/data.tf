@@ -374,6 +374,8 @@ data "aws_iam_policy_document" "xRay" {
     sid    = "AllowXRay"
     effect = "Allow"
     actions = [
+      "aps:RemoteWrite",
+      "aps:QueryMetrics",
       "xray:PutTraceSegments",
       "xray:PutTelemetryRecords",
       "xray:GetSamplingRules",
