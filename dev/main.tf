@@ -10,8 +10,7 @@ module "network" {
   endpoint_subnets    = local.endpoint_subnets
   alb_subnets         = local.alb_subnets
   ecs_subnets         = local.ecs_subnets
-
-
+  grafana_role_arn = module.iam.amg_workspace
 
 }
 
