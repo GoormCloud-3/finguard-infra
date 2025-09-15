@@ -12,7 +12,7 @@ module "network" {
   ecs_subnets         = local.ecs_subnets
   grafana_role_arn = module.iam.amg_workspace
 
-}
+} 
 
 module "iam" {
   source = "../modules/iam"
@@ -27,6 +27,7 @@ module "iam" {
 
   # SQS 모듈에서 필요한 값
   trade_queue_arn = module.trading_sqs.trade_queue_arn
+  fcm_push_trade_queue_arn = module.trading_sqs.fcm_push_trade_queue_arn
 
   # DynamoDB 모듈에서 필요한 값
   alert_table_arn = module.notification_token_table.table_arn
